@@ -174,8 +174,8 @@ To install transmart_loader, do:
 
 .. code-block:: console
 
-  git clone https://github.com/thehyve/transmart_loader.git
-  cd transmart_loader
+  git clone https://github.com/thehyve/python_transmart_loader.git
+  cd python_transmart_loader
   pip install .
 
 

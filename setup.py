@@ -21,7 +21,7 @@ setup(
     long_description=readme + '\n\n',
     author="Gijs Kant",
     author_email='gijs@thehyve.nl',
-    url='https://github.com/thehyve/transmart_loader',
+    url='https://github.com/thehyve/python_transmart_loader',
     packages=[
         'transmart_loader',
     ],
