@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from datetime import date
 from enum import Enum
-from typing import Any, Sequence, List, Iterable
+from typing import Any, Sequence, List, Iterable, Optional
 
 
 class ValueType(Enum):
@@ -55,8 +55,22 @@ class Visit:
     """
     Patient visit
     """
-    def __init__(self, patient: Patient):
+    def __init__(self, patient: Patient,
+                 identifier: str,
+                 active_status: Optional[str],
+                 start_date: Optional[date],
+                 end_date: Optional[date],
+                 inout: Optional[str],
+                 location: Optional[str],
+                 length_of_stay: Optional[int]):
         self.patient = patient
+        self.identifier = identifier
+        self.active_status = active_status
+        self.start_date = start_date
+        self.end_date = end_date
+        self.inout = inout
+        self.location = location
+        self.length_of_stay = length_of_stay
 
 
 class Study:
@@ -74,8 +88,8 @@ class TrialVisit:
     """
     def __init__(self,
                  study: Study,
-                 rel_time_unit: str,
-                 rel_time: int,
+                 rel_time_unit: Optional[str],
+                 rel_time: Optional[int],
                  rel_time_label: str):
         self.study = study
         self.rel_time_unit = rel_time_unit
@@ -167,10 +181,10 @@ class Observation:
     def __init__(self,
                  patient: Patient,
                  concept: Concept,
-                 visit: Visit,
+                 visit: Optional[Visit],
                  trial_visit: TrialVisit,
                  start_date: date,
-                 end_date: date,
+                 end_date: Optional[date],
                  value: Value):
         self.patient = patient
         self.concept = concept
@@ -185,10 +199,8 @@ class TreeNode:
     """
     Ontology node
     """
-    def __init__(self, parent: 'TreeNode', name: str):
-        self.parent = parent
-        if parent is not None:
-            parent.add_child(self)
+    def __init__(self, name: str):
+        self.parent: Optional['TreeNode'] = None
         self.name = name
         self.children: List[TreeNode] = []
 
@@ -200,8 +212,8 @@ class StudyNode(TreeNode):
     """
     Study node
     """
-    def __init__(self, parent: TreeNode, study: Study):
-        TreeNode.__init__(self, parent, study.name)
+    def __init__(self, study: Study):
+        TreeNode.__init__(self, study.name)
         self.study = study
 
 
@@ -209,8 +221,8 @@ class ConceptNode(TreeNode):
     """
     Concept node
     """
-    def __init__(self, parent: TreeNode, concept: Concept):
-        TreeNode.__init__(self, parent, concept.name)
+    def __init__(self, concept: Concept):
+        TreeNode.__init__(self, concept.name)
         self.concept = concept
 
 

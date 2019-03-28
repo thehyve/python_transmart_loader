@@ -44,11 +44,11 @@ class CollectionVisitor:
             self.visit_study(study)
         for trial_visit in collection.trial_visits:
             self.visit_trial_visit(trial_visit)
+        for patient in collection.patients:
+            self.visit_patient(patient)
         for visit in collection.visits:
             self.visit_visit(visit)
         for node in collection.ontology:
             self.visit_node(node)
-        for patient in collection.patients:
-            self.visit_patient(patient)
         for observation in collection.observations:
             self.visit_observation(observation)

@@ -1,17 +1,16 @@
-import csv
 import os
 from enum import Enum
 from os import path
-from typing import Set, TextIO, Tuple, Dict
+from typing import Set, Tuple, Dict
 
 from transmart_loader.collection_validator import CollectionValidator
 from transmart_loader.collection_visitor import CollectionVisitor
 from transmart_loader.console import Console
-from transmart_loader.csv_types import CsvWriter
 from transmart_loader.loader_exception import LoaderException
 from transmart_loader.transmart import DataCollection, Concept, Observation,\
     Patient, TreeNode, Visit, TrialVisit, \
     Study, ValueType, StudyNode, ConceptNode
+from transmart_loader.tsv_writer import TsvWriter
 
 
 class VisualAttribute(Enum):
@@ -53,6 +52,16 @@ class TransmartCopyWriter(CollectionVisitor):
                                'patient_ide_source',
                                'patient_num']
     patients_header = ['patient_num', 'sex_cd']
+    visits_header = ['encounter_num',
+                     'patient_num',
+                     'active_status_cd',
+                     'start_date',
+                     'end_date',
+                     'inout_cd',
+                     'location_cd',
+                     'location_path',
+                     'length_of_stay',
+                     'visit_blob']
     tree_nodes_header = ['c_hlevel',
                          'c_fullname',
                          'c_name',
@@ -103,7 +112,20 @@ class TransmartCopyWriter(CollectionVisitor):
             self.trial_visits[trial_visit_id] = len(self.trial_visits)
 
     def visit_visit(self, visit: Visit) -> None:
-        pass
+        visit_key = (visit.patient.identifier, visit.identifier)
+        if visit_key not in self.visits:
+            row = [len(self.visits),
+                   self.patients[visit.patient.identifier],
+                   visit.active_status,
+                   visit.start_date,
+                   visit.end_date,
+                   visit.inout,
+                   visit.location,
+                   None,
+                   visit.length_of_stay,
+                   None]
+            self.visits_writer.writerow(row)
+            self.visits[visit_key] = len(self.visits)
 
     def get_study_node_row(self, node: StudyNode, level, node_path):
         visual_attributes = '{}AS'.format(
@@ -185,13 +207,14 @@ class TransmartCopyWriter(CollectionVisitor):
         text_value = None
         number_value = None
         blob_value = None
-        if value.value_type == ValueType.Numeric:
+        value_type: ValueType = value.value_type()
+        if value_type is ValueType.Numeric:
             number_value = value.value
-        elif value.value_type == ValueType.Date:
+        elif value_type is ValueType.Date:
             number_value = value.value
-        elif value.value_type == ValueType.Categorical:
+        elif value_type is ValueType.Categorical:
             text_value = value.value
-        elif value.value_type == ValueType.Text:
+        elif value_type is ValueType.Text:
             blob_value = value.value
         else:
             raise LoaderException(
@@ -203,12 +226,13 @@ class TransmartCopyWriter(CollectionVisitor):
                '@',
                observation.start_date,
                '@',
-               0,
+               self.instance_num,
                self.trial_visits[trial_visit_id],
-               TransmartCopyWriter.value_type_codes[value.value_type],
+               TransmartCopyWriter.value_type_codes[value_type],
                text_value,
                number_value,
                blob_value]
+        self.instance_num = self.instance_num + 1
         self.observations_writer.writerow(row)
 
     def write_collection(self, collection: DataCollection) -> None:
@@ -229,72 +253,56 @@ class TransmartCopyWriter(CollectionVisitor):
         os.mkdir(output_dir + '/i2b2metadata')
         os.mkdir(output_dir + '/i2b2demodata')
 
-    def init_files(self):
-        self.concepts_file = open(
-            self.output_dir + '/i2b2demodata/concept_dimension.tsv', 'x')
-        self.concepts_writer = csv.writer(
-            self.concepts_file, delimiter='\t')
+    def init_writers(self):
+        self.concepts_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/concept_dimension.tsv')
         self.concepts_writer.writerow(self.concepts_header)
-        self.studies_file = open(
-            self.output_dir + '/i2b2demodata/study.tsv', 'x')
-        self.studies_writer = csv.writer(
-            self.studies_file, delimiter='\t')
+        self.studies_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/study.tsv')
         self.studies_writer.writerow(self.studies_header)
-        self.trial_visits_file = open(
-            self.output_dir + '/i2b2demodata/trial_visit_dimension.tsv', 'x')
-        self.trial_visits_writer = csv.writer(
-            self.trial_visits_file, delimiter='\t')
+        self.trial_visits_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/trial_visit_dimension.tsv')
         self.trial_visits_writer.writerow(self.trial_visits_header)
-        self.patient_mappings_file = open(
-            self.output_dir + '/i2b2demodata/patient_mapping.tsv', 'x')
-        self.patient_mappings_writer = csv.writer(
-            self.patient_mappings_file, delimiter='\t')
+        self.patient_mappings_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/patient_mapping.tsv')
         self.patient_mappings_writer.writerow(self.patient_mappings_header)
-        self.patients_file = open(
-            self.output_dir + '/i2b2demodata/patient_dimension.tsv', 'x')
-        self.patients_writer = csv.writer(
-            self.patients_file, delimiter='\t')
+        self.patients_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/patient_dimension.tsv')
         self.patients_writer.writerow(self.patients_header)
-        self.tree_nodes_file = open(
-            self.output_dir + '/i2b2metadata/i2b2_secure.tsv', 'x')
-        self.tree_nodes_writer = csv.writer(
-            self.tree_nodes_file, delimiter='\t')
+        self.visits_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/visit_dimension.tsv')
+        self.visits_writer.writerow(self.visits_header)
+        self.tree_nodes_writer = TsvWriter(
+            self.output_dir + '/i2b2metadata/i2b2_secure.tsv')
         self.tree_nodes_writer.writerow(self.tree_nodes_header)
-        self.observations_file = open(
-            self.output_dir + '/i2b2demodata/observation_fact.tsv', 'x')
-        self.observations_writer = csv.writer(
-            self.observations_file, delimiter='\t')
+        self.observations_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/observation_fact.tsv')
         self.observations_writer.writerow(self.observations_header)
 
     def close(self) -> None:
-        if self.concepts_file:
-            self.concepts_file.close()
+        self.concepts_writer.close()
 
     def __init__(self, output_dir: str):
         self.output_dir = output_dir
         self.prepare_output_dir()
-        self.concepts_file: TextIO = None
-        self.concepts_writer: CsvWriter = None
-        self.studies_file: TextIO = None
-        self.studies_writer: CsvWriter = None
-        self.trial_visits_file: TextIO = None
-        self.trial_visits_writer: CsvWriter = None
-        self.patient_mappings_file: TextIO = None
-        self.patient_mappings_writer: CsvWriter = None
-        self.patients_file: TextIO = None
-        self.patients_writer: CsvWriter = None
-        self.tree_nodes_file: TextIO = None
-        self.tree_nodes_writer: CsvWriter = None
-        self.observations_file: TextIO = None
-        self.observations_writer: CsvWriter = None
+        self.concepts_writer: TsvWriter = None
+        self.studies_writer: TsvWriter = None
+        self.trial_visits_writer: TsvWriter = None
+        self.patient_mappings_writer: TsvWriter = None
+        self.patients_writer: TsvWriter = None
+        self.visits_writer: TsvWriter = None
+        self.tree_nodes_writer: TsvWriter = None
+        self.observations_writer: TsvWriter = None
+        self.init_writers()
 
-        self.init_files()
+        self.concepts: Dict[str, int] = {}
+        self.studies: Dict[str, int] = {}
+        self.trial_visits: Dict[Tuple[str, str], int] = {}
+        self.patients: Dict[str, int] = {}
+        self.visits: Dict[Tuple[str, str], int] = {}
+        self.paths: Set[str] = {}
 
-        self.concepts = Dict[str, int]
-        self.studies = Dict[str, int]
-        self.trial_visits = Dict[Tuple[str, str], int]
-        self.patients = Dict[str, int]
-        self.paths = Set[str]
+        self.instance_num = 0
 
     def __del__(self):
         self.close()
