@@ -2,7 +2,12 @@
 TranSMART loader
 ################################################################################
 
+|Build status| |codecov|
 
+.. |Build status| image:: https://travis-ci.org/thehyve/python_transmart_loader.svg?branch=master
+   :target: https://travis-ci.org/thehyve/python_transmart_loader/branches
+.. |codecov| image:: https://codecov.io/gh/thehyve/python_transmart_loader/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/thehyve/python_transmart_loader
 
 Project Setup
 *************
@@ -12,29 +17,10 @@ Feel free to remove this text when the development of the software package takes
 
 For a quick reference on software development, we refer to `the software guide checklist <https://guide.esciencecenter.nl/best_practices/checklist.html>`_.
 
-Version control
----------------
-
-Once your Python package is created, put it under
-`version control <https://guide.esciencecenter.nl/best_practices/version_control.html>`_!
-We recommend using `git <http://git-scm.com/>`_ and `github <https://github.com/>`_.
-
-.. code-block:: console
-
-  cd transmart_loader
-  git init
-  git add -A
-  git commit
-
-To put your code on github, follow `this tutorial <https://help.github.com/articles/adding-an-existing-project-to-github-using-the-command-line/>`_.
-
 Python versions
 ---------------
 
-This repository is set up with Python versions:
-* 3.4
-* 3.5
-* 3.6
+This repository is set up with Python version 3.6
 
 Add or remove Python versions based on project requirements. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html>`_ contains more information about Python versions and writing Python 2 and 3 compatible code.
 
@@ -82,12 +68,6 @@ Testing and code coverage
 
   - This is configured in ``setup.py`` and ``setup.cfg``
 
-* Use `Travis CI <https://travis-ci.com/>`_ to automatically run tests and to test using multiple Python versions
-
-  - Configuration can be found in ``.travis.yml``
-  - `Getting started with Travis CI <https://docs.travis-ci.com/user/getting-started/>`_
-
-* TODO: add something about code quality/coverage tool?
 * `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#testing>`_
 
 Documentation
