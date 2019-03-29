@@ -39,6 +39,8 @@ class TransmartCopyWriter(CollectionVisitor):
     """
     Writes TranSMART data collections to a folder with files
     that can be loaded into a TranSMART database using transmart-copy.
+
+    FIXME: extend with writing dimension descriptions
     """
 
     concepts_header = ['concept_cd', 'concept_path', 'name_char']
@@ -96,7 +98,7 @@ class TransmartCopyWriter(CollectionVisitor):
     def visit_study(self, study: Study) -> None:
         if study.study_id not in self.studies:
             row = [len(self.studies), study.study_id, study.study_id]
-            self.concepts_writer.writerow(row)
+            self.studies_writer.writerow(row)
             self.studies[study.study_id] = len(self.studies)
 
     def visit_trial_visit(self, trial_visit: TrialVisit) -> None:
@@ -209,13 +211,13 @@ class TransmartCopyWriter(CollectionVisitor):
         blob_value = None
         value_type: ValueType = value.value_type()
         if value_type is ValueType.Numeric:
-            number_value = value.value
+            number_value = value.value()
         elif value_type is ValueType.Date:
-            number_value = value.value
+            number_value = value.value()
         elif value_type is ValueType.Categorical:
-            text_value = value.value
+            text_value = value.value()
         elif value_type is ValueType.Text:
-            blob_value = value.value
+            blob_value = value.value()
         else:
             raise LoaderException(
                 'Value type not supported: {}'.format(value.value_type))
@@ -243,7 +245,7 @@ class TransmartCopyWriter(CollectionVisitor):
         output_dir = self.output_dir
         if not path.exists(output_dir):
             Console.info('Creating output directory: {}'.format(output_dir))
-            os.mkdir(output_dir, 0o0700)
+            os.makedirs(output_dir, 0o0700, True)
         if not path.isdir(output_dir):
             raise LoaderException(
                 'Path is not a directory: {}'.format(output_dir))
@@ -279,9 +281,6 @@ class TransmartCopyWriter(CollectionVisitor):
             self.output_dir + '/i2b2demodata/observation_fact.tsv')
         self.observations_writer.writerow(self.observations_header)
 
-    def close(self) -> None:
-        self.concepts_writer.close()
-
     def __init__(self, output_dir: str):
         self.output_dir = output_dir
         self.prepare_output_dir()
@@ -303,6 +302,3 @@ class TransmartCopyWriter(CollectionVisitor):
         self.paths: Set[str] = {}
 
         self.instance_num = 0
-
-    def __del__(self):
-        self.close()

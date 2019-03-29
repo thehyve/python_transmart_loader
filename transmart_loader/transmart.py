@@ -183,7 +183,7 @@ class Observation:
                  concept: Concept,
                  visit: Optional[Visit],
                  trial_visit: TrialVisit,
-                 start_date: date,
+                 start_date: Optional[date],
                  end_date: Optional[date],
                  value: Value):
         self.patient = patient

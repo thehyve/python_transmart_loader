@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Optional
 
 from transmart_loader.transmart import DataCollection, Concept, Patient,\
     Observation, TreeNode, Visit, TrialVisit, Study
@@ -37,7 +38,9 @@ class CollectionVisitor:
     def visit_observation(self, observation: Observation) -> None:
         pass
 
-    def visit(self, collection: DataCollection) -> None:
+    def visit(self, collection: Optional[DataCollection]) -> None:
+        if collection is None:
+            return
         for concept in collection.concepts:
             self.visit_concept(concept)
         for study in collection.studies:
