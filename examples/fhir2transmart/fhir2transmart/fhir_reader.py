@@ -2,7 +2,7 @@ from datetime import date
 from typing import List, Optional, Any, Sequence
 
 from dateutil import parser
-from fhir import PatientResource, Encounter, Condition, Coding, CodeableConcept,\
+from fhir2transmart.fhir import PatientResource, Encounter, Condition, Coding, CodeableConcept,\
     Collection, Period
 
 from transmart_loader.console import Console
@@ -96,10 +96,10 @@ def read_encounter(data: dict) -> Encounter:
 def read_condition(data: dict) -> Condition:
     return Condition(
         read_reference(data, 'subject'),
-        read_codeable_concept(data['category']) if 'category' in data else [],
+        read_codeable_concept(data['category']) if 'category' in data else None,
         read_codeable_concept(data['code']) if 'code' in data else None,
-        read_codeable_concept(data['bodySite']) if 'bodySite' in data else [],
-        read_optional(data, 'encounter'),
+        read_codeable_concept(data['bodySite']) if 'bodySite' in data else None,
+        read_reference(data, 'encounter'),
         read_date_time(data, 'onsetDateTime'),
         read_date_time(data, 'abatementDateTime'),
         read_date(data, 'recordedDate')

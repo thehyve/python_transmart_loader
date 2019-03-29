@@ -1,15 +1,16 @@
 import os
+from datetime import date
 from enum import Enum
 from os import path
-from typing import Set, Tuple, Dict
+from typing import Set, Tuple, Dict, Optional
 
 from transmart_loader.collection_validator import CollectionValidator
 from transmart_loader.collection_visitor import CollectionVisitor
 from transmart_loader.console import Console
 from transmart_loader.loader_exception import LoaderException
-from transmart_loader.transmart import DataCollection, Concept, Observation,\
+from transmart_loader.transmart import DataCollection, Concept, Observation, \
     Patient, TreeNode, Visit, TrialVisit, \
-    Study, ValueType, StudyNode, ConceptNode
+    Study, ValueType, StudyNode, ConceptNode, Dimension
 from transmart_loader.tsv_writer import TsvWriter
 
 
@@ -35,16 +36,86 @@ ValueTypeToVisualAttribute = {
 }
 
 
+study_dimension = Dimension('study', None, None)
+concept_dimension = Dimension('concept', None, None)
+patient_dimension = Dimension('patient', None, None)
+start_time_dimension = Dimension('start time', None, None)
+
+
+def get_study_node_row(node: StudyNode, level, node_path):
+    visual_attributes = '{}AS'.format(
+        'L' if len(node.children) == 0 else 'F')
+    row = [level,
+           node_path,
+           node.name,
+           visual_attributes,
+           None,
+           '@',
+           '@',
+           '@',
+           'T',
+           '=',
+           node.study.study_id,
+           'PUBLIC']
+    return row
+
+
+def get_concept_node_row(node: ConceptNode, level, node_path):
+    concept_type = ValueTypeToVisualAttribute[node.concept.value_type]
+    visual_attributes = '{}A{}'.format(
+        'L' if len(node.children) == 0 else 'F',
+        concept_type)
+    row = [level,
+           node_path,
+           node.name,
+           visual_attributes,
+           node.concept.concept_code,
+           'CONCEPT_CD',
+           'CONCEPT_DIMENSION',
+           'CONCEPT_PATH',
+           'T',
+           'LIKE',
+           node.concept.concept_path,
+           'PUBLIC']
+    return row
+
+
+def get_folder_node_row(node: TreeNode, level, node_path):
+    visual_attributes = 'CA '
+    row = [level,
+           node_path,
+           node.name,
+           visual_attributes,
+           None,
+           None,
+           None,
+           None,
+           'T',
+           'LIKE',
+           '',
+           'PUBLIC']
+    return row
+
+
+date_format = '%Y-%m-%d %H:%M:%S'
+
+
+def format_date(value: Optional[date]) -> Optional[str]:
+    if value is None:
+        return None
+    return value.strftime(date_format)
+
+
 class TransmartCopyWriter(CollectionVisitor):
     """
     Writes TranSMART data collections to a folder with files
     that can be loaded into a TranSMART database using transmart-copy.
-
-    FIXME: extend with writing dimension descriptions
     """
 
     concepts_header = ['concept_cd', 'concept_path', 'name_char']
     studies_header = ['study_num', 'study_id', 'secure_obj_token']
+    dimensions_header = ['id', 'name', 'modifier_code', 'value_type']
+    study_dimensions_header = ['study_id', 'dimension_description_id']
     trial_visits_header = ['trial_visit_num',
                            'study_num',
                            'rel_time_unit_cd',
@@ -119,8 +190,8 @@ class TransmartCopyWriter(CollectionVisitor):
             row = [len(self.visits),
                    self.patients[visit.patient.identifier],
                    visit.active_status,
-                   visit.start_date,
-                   visit.end_date,
+                   format_date(visit.start_date),
+                   format_date(visit.end_date),
                    visit.inout,
                    visit.location,
                    None,
@@ -129,54 +200,18 @@ class TransmartCopyWriter(CollectionVisitor):
             self.visits_writer.writerow(row)
             self.visits[visit_key] = len(self.visits)
 
-    def get_study_node_row(self, node: StudyNode, level, node_path):
-        visual_attributes = '{}AS'.format(
-            'L' if len(node.children) == 0 else 'F')
-        row = [level,
-               node_path,
-               node.name,
-               visual_attributes,
-               None,
-               '@',
-               '@',
-               '@',
-               'T',
-               '=',
-               node.study.study_id,
-               'PUBLIC']
-        return row
-
-    def get_concept_node_row(self, node: ConceptNode, level, node_path):
-        concept_type = ValueTypeToVisualAttribute[node.concept.value_type]
-        visual_attributes = '{}A{}'.format(
-            'L' if len(node.children) == 0 else 'F',
-            concept_type)
-        row = [level,
-               node_path,
-               node.name,
-               visual_attributes,
-               node.concept.concept_code,
-               'CONCEPT_CD',
-               'CONCEPT_DIMENSION',
-               'CONCEPT_PATH',
-               'T',
-               'LIKE',
-               node.concept.concept_path,
-               'PUBLIC']
-        return row
-
     def visit_tree_node(self, node: TreeNode, level, parent_path):
-        path = parent_path + '\\' + node.name
+        node_path = parent_path + '\\' + node.name
         if isinstance(node, StudyNode):
-            row = self.get_study_node_row(node, level, path)
+            row = get_study_node_row(node, level, node_path)
         elif isinstance(node, ConceptNode):
-            row = self.get_concept_node_row(node, level, path)
-        else:
-            raise LoaderException('Unsupported node type')
-        if path not in self.paths:
+            row = get_concept_node_row(node, level, node_path)
+        elif len(node.children) > 0:
+            row = get_folder_node_row(node, level, node_path)
+        if node_path not in self.paths:
             self.tree_nodes_writer.writerow(row)
             for child in node.children:
-                self.visit_tree_node(child, level + 1, path)
+                self.visit_tree_node(child, level + 1, node_path)
 
     def visit_node(self, node: TreeNode) -> None:
         self.visit_tree_node(node, 0, '')
@@ -213,7 +248,7 @@ class TransmartCopyWriter(CollectionVisitor):
         if value_type is ValueType.Numeric:
             number_value = value.value()
         elif value_type is ValueType.Date:
-            number_value = value.value()
+            number_value = value.value().timestamp()
         elif value_type is ValueType.Categorical:
             text_value = value.value()
         elif value_type is ValueType.Text:
@@ -237,11 +272,42 @@ class TransmartCopyWriter(CollectionVisitor):
         self.instance_num = self.instance_num + 1
         self.observations_writer.writerow(row)
 
+    def write_dimension(self, dimension: Dimension) -> None:
+        if dimension.name not in self.dimensions:
+            value_type = None
+            if dimension.value_type:
+                value_type = TransmartCopyWriter.value_type_codes[
+                    dimension.value_type]
+            row = [len(self.dimensions),
+                   dimension.name,
+                   dimension.modifier_code,
+                   value_type]
+            self.dimensions_writer.writerow(row)
+            self.dimensions[dimension.name] = len(self.dimensions)
+
+    def write_dimensions(self) -> None:
+        """
+        Write dimensions metadata and link all studies to the dimensions
+        """
+        dimensions = [
+            study_dimension,
+            concept_dimension,
+            patient_dimension,
+            start_time_dimension
+        ]
+        for dimension in dimensions:
+            self.write_dimension(dimension)
+        for study_index in self.studies.values():
+            for dimension_index in self.dimensions.values():
+                study_dimension_row = [study_index, dimension_index]
+                self.study_dimensions_writer.writerow(study_dimension_row)
+
     def write_collection(self, collection: DataCollection) -> None:
         CollectionValidator.validate(collection)
         self.visit(collection)
+        self.write_dimensions()
 
-    def prepare_output_dir(self):
+    def prepare_output_dir(self) -> None:
         output_dir = self.output_dir
         if not path.exists(output_dir):
             Console.info('Creating output directory: {}'.format(output_dir))
@@ -255,13 +321,19 @@ class TransmartCopyWriter(CollectionVisitor):
         os.mkdir(output_dir + '/i2b2metadata')
         os.mkdir(output_dir + '/i2b2demodata')
 
-    def init_writers(self):
+    def init_writers(self) -> None:
         self.concepts_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/concept_dimension.tsv')
         self.concepts_writer.writerow(self.concepts_header)
         self.studies_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/study.tsv')
         self.studies_writer.writerow(self.studies_header)
+        self.dimensions_writer = TsvWriter(
+            self.output_dir + '/i2b2metadata/dimension_description.tsv')
+        self.dimensions_writer.writerow(self.dimensions_header)
+        self.study_dimensions_writer = TsvWriter(
+            self.output_dir + '/i2b2metadata/study_dimension_descriptions.tsv')
+        self.study_dimensions_writer.writerow(self.study_dimensions_header)
         self.trial_visits_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/trial_visit_dimension.tsv')
         self.trial_visits_writer.writerow(self.trial_visits_header)
@@ -286,6 +358,8 @@ class TransmartCopyWriter(CollectionVisitor):
         self.prepare_output_dir()
         self.concepts_writer: TsvWriter = None
         self.studies_writer: TsvWriter = None
+        self.dimensions_writer: TsvWriter = None
+        self.study_dimensions_writer: TsvWriter = None
         self.trial_visits_writer: TsvWriter = None
         self.patient_mappings_writer: TsvWriter = None
         self.patients_writer: TsvWriter = None
@@ -296,6 +370,7 @@ class TransmartCopyWriter(CollectionVisitor):
 
         self.concepts: Dict[str, int] = {}
         self.studies: Dict[str, int] = {}
+        self.dimensions: Dict[str, int] = {}
         self.trial_visits: Dict[Tuple[str, str], int] = {}
         self.patients: Dict[str, int] = {}
         self.visits: Dict[Tuple[str, str], int] = {}

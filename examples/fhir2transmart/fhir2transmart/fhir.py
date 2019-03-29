@@ -1,6 +1,12 @@
 from datetime import date, datetime
 from typing import Optional, Iterable
 
+"""
+FHIR resource classes, capturing a subset of the FHIR specification.
+A more complete collection of Python classes is available at
+  https://github.com/smart-on-fhir/client-py
+"""
+
 PatientIdentifier = str
 
 EncounterIdentifier = str
@@ -90,9 +96,9 @@ class Condition:
     """
     def __init__(self,
                  subject: PatientIdentifier,
-                 category: Iterable[CodeableConcept],
+                 category: Optional[CodeableConcept],
                  code: CodeableConcept,
-                 body_site: Iterable[CodeableConcept],
+                 body_site: Optional[CodeableConcept],
                  encounter: Optional[EncounterIdentifier],
                  onset_date_time: Optional[datetime],
                  abatement_date_time: Optional[datetime],
