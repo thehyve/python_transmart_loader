@@ -168,7 +168,7 @@ class TransmartCopyWriter(CollectionVisitor):
 
     def visit_study(self, study: Study) -> None:
         if study.study_id not in self.studies:
-            row = [len(self.studies), study.study_id, study.study_id]
+            row = [len(self.studies), study.study_id, 'PUBLIC']
             self.studies_writer.writerow(row)
             self.studies[study.study_id] = len(self.studies)
 
@@ -201,7 +201,7 @@ class TransmartCopyWriter(CollectionVisitor):
             self.visits[visit_key] = len(self.visits)
 
     def visit_tree_node(self, node: TreeNode, level, parent_path):
-        node_path = parent_path + '\\' + node.name
+        node_path = parent_path + node.name + '\\'
         if isinstance(node, StudyNode):
             row = get_study_node_row(node, level, node_path)
         elif isinstance(node, ConceptNode):
@@ -214,7 +214,7 @@ class TransmartCopyWriter(CollectionVisitor):
                 self.visit_tree_node(child, level + 1, node_path)
 
     def visit_node(self, node: TreeNode) -> None:
-        self.visit_tree_node(node, 0, '')
+        self.visit_tree_node(node, 0, '\\')
 
     def visit_patient(self, patient: Patient) -> None:
         if patient.identifier not in self.patients:
