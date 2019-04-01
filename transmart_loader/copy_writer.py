@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from os import path
 from typing import Set, Tuple, Dict, Optional
@@ -240,6 +240,13 @@ class TransmartCopyWriter(CollectionVisitor):
     def visit_observation(self, observation: Observation) -> None:
         trial_visit_id = (observation.trial_visit.study.study_id,
                           observation.trial_visit.rel_time_label)
+        visit_index = None
+        if observation.visit:
+            visit_key = (observation.patient.identifier,
+                         observation.visit.identifier)
+            visit_index = self.visits[visit_key]
+        if visit_index is None:
+            visit_index = -1
         value = observation.value
         text_value = None
         number_value = None
@@ -248,7 +255,13 @@ class TransmartCopyWriter(CollectionVisitor):
         if value_type is ValueType.Numeric:
             number_value = value.value()
         elif value_type is ValueType.Date:
-            number_value = value.value().timestamp()
+            if isinstance(value.value(), datetime):
+                number_value = value.value().timestamp()
+            else:
+                date_value: date = value.value()
+                datetime_value = datetime(
+                    date_value.year, date_value.month, date_value.day)
+                number_value = datetime_value.timestamp()
         elif value_type is ValueType.Categorical:
             text_value = value.value()
         elif value_type is ValueType.Text:
@@ -257,7 +270,7 @@ class TransmartCopyWriter(CollectionVisitor):
             raise LoaderException(
                 'Value type not supported: {}'.format(value.value_type))
 
-        row = [-1,
+        row = [visit_index,
                self.patients[observation.patient.identifier],
                observation.concept.concept_code,
                '@',

@@ -3,8 +3,8 @@ import sys
 
 import click
 
-from fhir2transmart.fhir_reader import FhirReader
-from fhir2transmart.mapper import Mapper
+from .fhir_reader import FhirReader
+from .mapper import Mapper
 from transmart_loader.console import Console
 from transmart_loader.copy_writer import TransmartCopyWriter
 from transmart_loader.loader_exception import LoaderException
