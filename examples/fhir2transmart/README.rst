@@ -13,7 +13,9 @@ To install fhir2transmart, do:
 .. code-block:: console
 
   git clone https://github.com/thehyve/python_transmart_loader.git
-  cd python_transmart_loader/examples/fhir2transmart
+  cd python_transmart_loader
+  pip install .
+  cd examples/fhir2transmart
   pip install .
 
 
