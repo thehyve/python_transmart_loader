@@ -70,6 +70,9 @@ def test_load_empty_collection(tmp_path, empty_collection):
     assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/study.tsv')
+    assert path.exists(target_path + '/i2b2metadata/dimension_description.tsv')
+    assert path.exists(
+        target_path + '/i2b2metadata/study_dimension_descriptions.tsv')
     assert path.exists(target_path + '/i2b2demodata/trial_visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/observation_fact.tsv')
 
@@ -83,5 +86,8 @@ def test_load_simple_collection(tmp_path, simple_collection):
     assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/study.tsv')
+    assert path.exists(target_path + '/i2b2metadata/dimension_description.tsv')
+    assert path.exists(
+        target_path + '/i2b2metadata/study_dimension_descriptions.tsv')
     assert path.exists(target_path + '/i2b2demodata/trial_visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/observation_fact.tsv')

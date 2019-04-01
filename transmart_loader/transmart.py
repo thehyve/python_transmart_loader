@@ -82,6 +82,19 @@ class Study:
         self.name = name
 
 
+class Dimension:
+    """
+    Dimension metadata
+    """
+    def __init__(self,
+                 name: str,
+                 modifier_code: Optional[str],
+                 value_type: Optional[ValueType]):
+        self.name = name
+        self.modifier_code = modifier_code
+        self.value_type = value_type
+
+
 class TrialVisit:
     """
     Trial visit

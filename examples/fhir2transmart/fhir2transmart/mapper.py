@@ -1,12 +1,16 @@
 from typing import List, Optional, Dict
 
-from fhir import Collection, PatientResource, Condition, Encounter, CodeableConcept
+from fhir2transmart.fhir import Collection, PatientResource, Condition,\
+    Encounter, CodeableConcept
 
 from transmart_loader.transmart import DataCollection, Patient, Concept, \
-    Observation, TreeNode, Visit, TrialVisit, Study, ValueType, DateValue, CategoricalValue
+    Observation, TreeNode, Visit, TrialVisit, Study, ValueType, DateValue, \
+    CategoricalValue, ConceptNode
 
 birth_date_concept = Concept(
     'birth_date', 'Birth date', 'birth_date', ValueType.Date)
+
+patient_concepts = ['birth_date']
 
 study = Study('FHIR', 'FHIR')
 
@@ -14,7 +18,9 @@ trial_visit = TrialVisit(study, '', 0, '')
 
 
 def map_concept(codeable_concept: CodeableConcept) -> Concept:
-    concept_code = codeable_concept.coding[0].system + '/' + codeable_concept.coding[0].code
+    concept_code = '{}/{}'.format(
+        codeable_concept.coding[0].system,
+        codeable_concept.coding[0].code)
     return Concept(
         concept_code,
         codeable_concept.text,
@@ -34,13 +40,21 @@ class Mapper:
         self.studies: List[Study] = [study]
         self.trial_visits: List[TrialVisit] = [trial_visit]
         self.visits: List[Visit] = []
-        self.ontology: List[TreeNode] = []
+        self.patient_nodes: List[TreeNode] = []
+        self.ontology_nodes: List[TreeNode] = []
         self.patients: Dict[str, Patient] = {}
         self.observations: List[Observation] = []
+
+    def add_ontology_node(self, concept: Concept) -> None:
+        if concept.concept_code in patient_concepts:
+            self.patient_nodes.append(ConceptNode(concept))
+        else:
+            self.ontology_nodes.append(ConceptNode(concept))
 
     def add_concept(self, concept: Concept) -> None:
         if concept.concept_code not in self.concepts:
             self.concepts[concept.concept_code] = concept
+            self.add_ontology_node(concept)
 
     def add_observation(self, observation: Observation) -> None:
         self.add_concept(observation.concept)
@@ -101,11 +115,18 @@ class Mapper:
             return None
         mapper = Mapper()
         mapper.map_collection(collection)
+        patient_root = TreeNode('Patient')
+        for node in mapper.patient_nodes:
+            patient_root.add_child(node)
+        ontology_root = TreeNode('Ontology')
+        for node in mapper.ontology_nodes:
+            ontology_root.add_child(node)
+        ontology = [patient_root, ontology_root]
         return DataCollection(
             mapper.concepts.values(),
             mapper.studies,
             mapper.trial_visits,
             mapper.visits,
-            mapper.ontology,
+            ontology,
             mapper.patients.values(),
             mapper.observations)
