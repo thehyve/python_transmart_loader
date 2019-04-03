@@ -19,7 +19,7 @@ def fhir2transmart(input, output_dir):
         Console.info('Reading JSON from {}'.format(input))
         with open(input, 'r') as input_file:
             data = json.load(input_file)
-            collection = FhirReader().read_bundle(data)
+            collection = FhirReader.read(data)
             result = Mapper.map(collection)
             Console.info('Writing files to {}'.format(output_dir))
             writer = TransmartCopyWriter(output_dir)

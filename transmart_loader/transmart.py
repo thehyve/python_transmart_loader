@@ -64,7 +64,7 @@ class Visit:
                  location: Optional[str],
                  length_of_stay: Optional[int]):
         self.patient = patient
-        self.identifier = identifier
+        self.identifier = identifier  # TODO: remove identifier field
         self.active_status = active_status
         self.start_date = start_date
         self.end_date = end_date

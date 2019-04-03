@@ -1,9 +1,10 @@
 from typing import List, Optional, Dict
 
-import fhirclient.models.codeableconcept as codeableconcept
-import fhirclient.models.encounter as encounter
-import fhirclient.models.patient as patient
-import fhirclient.models.fhirreference as fhirreference
+from fhirclient.models.codeableconcept import CodeableConcept
+from fhirclient.models.encounter import Encounter
+import fhirclient.models.patient as fhir_patient
+from fhirclient.models.fhirreference import FHIRReference
+from transmart_loader.loader_exception import LoaderException
 
 from .fhir import Collection, Condition
 
@@ -21,7 +22,7 @@ study = Study('FHIR', 'FHIR')
 trial_visit = TrialVisit(study, '', 0, '')
 
 
-def map_concept(codeable_concept: codeableconcept.CodeableConcept) -> Concept:
+def map_concept(codeable_concept: CodeableConcept) -> Concept:
     concept_code = '{}/{}'.format(
         codeable_concept.coding[0].system,
         codeable_concept.coding[0].code)
@@ -33,7 +34,11 @@ def map_concept(codeable_concept: codeableconcept.CodeableConcept) -> Concept:
     )
 
 
-def get_reference(ref_obj: fhirreference.FHIRReference) -> Optional[str]:
+def get_reference(ref_obj: FHIRReference) -> Optional[str]:
+    """
+    FIXME: the urn:uuid: prefix does not have to be stripped
+     if fullUrl is used instead of id.
+    """
     if ref_obj is None:
         return None
     reference: str = ref_obj.reference
@@ -73,7 +78,7 @@ class Mapper:
         self.add_concept(observation.concept)
         self.observations.append(observation)
 
-    def map_patient(self, patient: patient.Patient) -> None:
+    def map_patient(self, patient: fhir_patient.Patient) -> None:
         subject = Patient(patient.id, patient.gender, [])
         self.patients[patient.id] = subject
         birth_date_observation = Observation(
@@ -86,7 +91,7 @@ class Mapper:
             DateValue(patient.birthDate.date))
         self.add_observation(birth_date_observation)
 
-    def map_encounter(self, encounter: encounter.Encounter) -> None:
+    def map_encounter(self, encounter: Encounter) -> None:
         subject = self.patients[get_reference(encounter.subject)]
         visit = Visit(
             subject,
