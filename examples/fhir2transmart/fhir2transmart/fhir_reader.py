@@ -1,5 +1,7 @@
 from typing import List, Sequence
 
+from fhirclient.models.fhirreference import FHIRReference
+
 from .fhir import Condition, Collection
 
 import fhirclient.models.encounter as encounter
@@ -10,15 +12,23 @@ from transmart_loader.loader_exception import LoaderException
 
 
 def read_patient(data: dict) -> patient.Patient:
-    return patient.Patient(data)
+    return patient.Patient(data, False)
 
 
 def read_encounter(data: dict) -> encounter.Encounter:
-    return encounter.Encounter(data)
+    result = encounter.Encounter(data, False)
+    if 'subject' in data:
+        result.subject = FHIRReference(data['subject'], False)
+    return result
 
 
 def read_condition(data: dict) -> Condition:
-    return Condition(data)
+    result = Condition(data, False)
+    if 'subject' in data:
+        result.subject = FHIRReference(data['subject'], False)
+    if 'encounter' in data:
+        result.encounter = FHIRReference(data['encounter'], False)
+    return result
 
 
 class FhirReader:
@@ -71,11 +81,5 @@ class FhirReader:
             raise LoaderException(
                 'Expected resource type Bundle, got {}'.format(
                     resource_type
-                ))
-        bundle_type = data['type']
-        if bundle_type != 'collection':
-            raise LoaderException(
-                'Expected bundle type collection, got {}'.format(
-                    bundle_type
                 ))
         return FhirReader().read_bundle(data)
