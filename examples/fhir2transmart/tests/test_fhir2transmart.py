@@ -135,4 +135,4 @@ def test_read_simple_bundle(simple_fhir_bundle):
     assert len(result.studies) == 1
     assert len(result.patients) == 2
     assert len(result.visits) == 2
-    assert len(result.observations) == 4
+    assert len(result.observations) == 6

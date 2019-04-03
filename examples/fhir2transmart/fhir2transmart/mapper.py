@@ -12,10 +12,13 @@ from transmart_loader.transmart import DataCollection, Patient, Concept, \
     Observation, TreeNode, Visit, TrialVisit, Study, ValueType, DateValue, \
     CategoricalValue, ConceptNode
 
+gender_concept = Concept(
+    'gender', 'Gender', 'gender', ValueType.Categorical)
+
 birth_date_concept = Concept(
     'birth_date', 'Birth date', 'birth_date', ValueType.Date)
 
-patient_concepts = ['birth_date']
+patient_concepts = ['gender', 'birth_date']
 
 study = Study('FHIR', 'FHIR')
 
@@ -24,9 +27,12 @@ trial_visit = TrialVisit(study, '', 0, '')
 
 def map_concept(codeable_concept: CodeableConcept) -> Concept:
     """
+    Maps a codeable concept to a TranSMART concept.
+    The system and code are both used for the concept code and the path.
+    The value type is always Categorical.
 
-    :param codeable_concept:
-    :return:
+    :param codeable_concept: the codeable concept
+    :return: a TranSMART Concept entity
     """
     concept_code = '{}/{}'.format(
         codeable_concept.coding[0].system,
@@ -41,9 +47,10 @@ def map_concept(codeable_concept: CodeableConcept) -> Concept:
 
 def get_reference(ref_obj: FHIRReference) -> Optional[str]:
     """
+    Returns a reference string from a FHIR Reference if it exists.
 
-    :param ref_obj:
-    :return:
+    :param ref_obj: the FHIR Reference object
+    :return: the reference string or None
     """
     if ref_obj is None:
         return None
@@ -86,14 +93,23 @@ class Mapper:
 
     def map_patient(self, patient: fhir_patient.Patient) -> None:
         """ Maps a FHIR Patient Resource to a Patient entity in TranSMART.
-        The birthDate is mapped to a Date Observation entity.
-        The Patient and Observation are added to the collections of
+        The gender and birthDate are mapped to a Date Observation entity.
+        The Patient and Observations are added to the collections of
         Patients and Observations returned by the mapper.
 
         :param patient: a FHIR Patient Resource
         """
         subject = Patient(patient.id, patient.gender, [])
         self.patients[patient.id] = subject
+        gender_observation = Observation(
+            subject,
+            gender_concept,
+            None,
+            trial_visit,
+            None,
+            None,
+            CategoricalValue(patient.gender))
+        self.add_observation(gender_observation)
         birth_date_observation = Observation(
             subject,
             birth_date_concept,
