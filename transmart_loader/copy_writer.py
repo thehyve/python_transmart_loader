@@ -40,6 +40,7 @@ study_dimension = Dimension('study', None, None)
 concept_dimension = Dimension('concept', None, None)
 patient_dimension = Dimension('patient', None, None)
 start_time_dimension = Dimension('start time', None, None)
+visit_dimension = Dimension('visit', None, None)
 
 
 def get_study_node_row(node: StudyNode, level, node_path):
@@ -107,8 +108,7 @@ def format_date(value: Optional[date]) -> Optional[str]:
 
 
 class TransmartCopyWriter(CollectionVisitor):
-    """
-    Writes TranSMART data collections to a folder with files
+    """ Writes TranSMART data collections to a folder with files
     that can be loaded into a TranSMART database using transmart-copy.
     """
 
@@ -162,18 +162,37 @@ class TransmartCopyWriter(CollectionVisitor):
                            'observation_blob']
 
     def visit_concept(self, concept: Concept) -> None:
+        """ Serialises a Concept entity to a TSV file.
+
+        :param concept: the Concept entity
+        """
         if concept.concept_code not in self.concepts:
             row = [concept.concept_code, concept.concept_path, concept.name]
             self.concepts_writer.writerow(row)
             self.concepts[concept.concept_code] = len(self.concepts)
 
+    def write_study_dimensions(self, study_index):
+        for dimension_index in self.dimensions.values():
+            study_dimension_row = [study_index, dimension_index]
+            self.study_dimensions_writer.writerow(study_dimension_row)
+
     def visit_study(self, study: Study) -> None:
+        """ Serialises a Study entity to a TSV file.
+
+        :param study: the Study entity
+        """
         if study.study_id not in self.studies:
-            row = [len(self.studies), study.study_id, 'PUBLIC']
+            study_index = len(self.studies)
+            row = [study_index, study.study_id, 'PUBLIC']
             self.studies_writer.writerow(row)
-            self.studies[study.study_id] = len(self.studies)
+            self.studies[study.study_id] = study_index
+            self.write_study_dimensions(study_index)
 
     def visit_trial_visit(self, trial_visit: TrialVisit) -> None:
+        """ Serialises a TrialVisit entity to a TSV file.
+
+        :param trial_visit: the TrialVisit entity
+        """
         trial_visit_id = (trial_visit.study.study_id,
                           trial_visit.rel_time_label)
         if trial_visit_id not in self.trial_visits:
@@ -186,6 +205,10 @@ class TransmartCopyWriter(CollectionVisitor):
             self.trial_visits[trial_visit_id] = len(self.trial_visits)
 
     def visit_visit(self, visit: Visit) -> None:
+        """ Serialises a Visit entity to a TSV file.
+
+        :param visit: the Visit entity
+        """
         visit_key = (visit.patient.identifier, visit.identifier)
         if visit_key not in self.visits:
             row = [len(self.visits),
@@ -201,7 +224,13 @@ class TransmartCopyWriter(CollectionVisitor):
             self.visits_writer.writerow(row)
             self.visits[visit_key] = len(self.visits)
 
-    def visit_tree_node(self, node: TreeNode, level, parent_path):
+    def visit_tree_node(self, node: TreeNode, level=0, parent_path='\\'):
+        """ Serialises a TreeNode entity and its children to a TSV file.
+
+        :param node: the TreeNode entity
+        :param level: the hierarchy level of the node
+        :param parent_path: the path of the parent node.
+        """
         node_path = parent_path + node.name + '\\'
         if isinstance(node, StudyNode):
             row = get_study_node_row(node, level, node_path)
@@ -209,15 +238,23 @@ class TransmartCopyWriter(CollectionVisitor):
             row = get_concept_node_row(node, level, node_path)
         elif len(node.children) > 0:
             row = get_folder_node_row(node, level, node_path)
+        else:
+            Console.warning('Skipping node {}'.format(node_path))
+            return
         if node_path not in self.paths:
             self.tree_nodes_writer.writerow(row)
             for child in node.children:
                 self.visit_tree_node(child, level + 1, node_path)
 
     def visit_node(self, node: TreeNode) -> None:
-        self.visit_tree_node(node, 0, '\\')
+        self.visit_tree_node(node)
 
     def visit_patient(self, patient: Patient) -> None:
+        """ Serialises an Patient entity and related PatientMapping
+        entities to TSV files.
+
+        :param patient: the Patient entity
+        """
         if patient.identifier not in self.patients:
             patient_num = len(self.patients)
             patient_row = [patient_num, patient.sex]
@@ -239,6 +276,10 @@ class TransmartCopyWriter(CollectionVisitor):
     }
 
     def visit_observation(self, observation: Observation) -> None:
+        """ Serialises an Observation entity to a TSV file.
+
+        :param observation: the Observation entity
+        """
         trial_visit_id = (observation.trial_visit.study.study_id,
                           observation.trial_visit.rel_time_label)
         visit_index = None
@@ -288,6 +329,10 @@ class TransmartCopyWriter(CollectionVisitor):
         self.observations_writer.writerow(row)
 
     def write_dimension(self, dimension: Dimension) -> None:
+        """ Serialises a Dimension entity to a TSV file.
+
+        :param dimension: the Dimension entity
+        """
         if dimension.name not in self.dimensions:
             value_type = None
             if dimension.value_type:
@@ -301,28 +346,27 @@ class TransmartCopyWriter(CollectionVisitor):
             self.dimensions[dimension.name] = len(self.dimensions)
 
     def write_dimensions(self) -> None:
-        """
-        Write dimensions metadata and link all studies to the dimensions
+        """ Write dimensions metadata and link all studies to the dimensions
         """
         dimensions = [
             study_dimension,
             concept_dimension,
             patient_dimension,
-            start_time_dimension
+            start_time_dimension,
+            visit_dimension
         ]
         for dimension in dimensions:
             self.write_dimension(dimension)
-        for study_index in self.studies.values():
-            for dimension_index in self.dimensions.values():
-                study_dimension_row = [study_index, dimension_index]
-                self.study_dimensions_writer.writerow(study_dimension_row)
 
     def write_collection(self, collection: DataCollection) -> None:
         CollectionValidator.validate(collection)
-        self.visit(collection)
         self.write_dimensions()
+        self.visit(collection)
 
     def prepare_output_dir(self) -> None:
+        """ Creates an output directory if it does not exist.
+        Fails if the output directory exists and is not empty.
+        """
         output_dir = self.output_dir
         if not path.exists(output_dir):
             Console.info('Creating output directory: {}'.format(output_dir))
@@ -337,6 +381,9 @@ class TransmartCopyWriter(CollectionVisitor):
         os.mkdir(output_dir + '/i2b2demodata')
 
     def init_writers(self) -> None:
+        """ Creates files and initialises writers for the output files
+        in transmart-copy format.
+        """
         self.concepts_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/concept_dimension.tsv')
         self.concepts_writer.writerow(self.concepts_header)

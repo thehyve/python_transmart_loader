@@ -45,7 +45,7 @@ class Condition(condition.Condition):
 
 class Collection:
     """
-    FHIR data collection
+    FHIR data collection, containing Patient, Encounter and Condition resources
     """
     def __init__(self,
                  patients: Iterable[patient.Patient],
