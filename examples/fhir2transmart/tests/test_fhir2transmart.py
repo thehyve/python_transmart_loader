@@ -44,6 +44,7 @@ def simple_fhir_bundle() -> dict:
                     'subject': {
                         'reference': 'urn:uuid:SUBJ0'
                     },
+                    'status': 'finished',
                     'period': {
                         'start': '2010-12-10T09:30',
                         'end': '2010-12-10T17:00'
@@ -63,13 +64,13 @@ def simple_fhir_bundle() -> dict:
                             'code': 'Code-X'
                         }]
                     },
-                    'bodySite': {
+                    'bodySite': [{
                         'text': 'Head',
                         'coding': [{
                             'system': 'SNOMEDCTBodyStructures',
                             'code': 'Example body site'
                         }]
-                    },
+                    }],
                     'encounter': {
                         'reference': 'urn:uuid:VISIT0'
                     },
@@ -91,7 +92,10 @@ def simple_fhir_bundle() -> dict:
                     'subject': {
                         'reference': 'urn:uuid:SUBJ1'
                     },
-                    'class': 'in'
+                    'status': 'finished',
+                    'class': {
+                        'code': 'in'
+                    }
                 }
             },
             {

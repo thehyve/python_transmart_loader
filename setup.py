@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-
+import sys
 from setuptools import setup
+
+if sys.version_info < (3, 6):
+    sys.exit(
+        'Python < 3.6 is not supported. You are using Python {}.{}.'.format(
+            sys.version_info[0], sys.version_info[1])
+    )
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -14,7 +20,7 @@ with open(os.path.join(here, 'transmart_loader', '__version__.py')) as f:
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-with open("requirements.txt", 'r') as f:
+with open('requirements.txt', 'r') as f:
     required_packages = f.read().splitlines()
 
 setup(
@@ -43,6 +49,7 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
+    python_requires='>=3.6.0',
     install_requires=required_packages,
     setup_requires=[
         # dependency for `python setup.py test`
