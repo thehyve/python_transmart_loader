@@ -1,5 +1,7 @@
 import json
+import os
 import sys
+from os import path
 
 import click
 
@@ -16,15 +18,20 @@ from transmart_loader.loader_exception import LoaderException
 def fhir2transmart(input, output_dir):
     Console.title('FHIR to TranSMART')
     try:
-        Console.info('Reading JSON from {}'.format(input))
-        with open(input, 'r') as input_file:
-            data = json.load(input_file)
-            collection = FhirReader.read(data)
-            result = Mapper.map(collection)
-            Console.info('Writing files to {}'.format(output_dir))
-            writer = TransmartCopyWriter(output_dir)
-            writer.write_collection(result)
-            Console.info('Done.')
+        Console.info('Writing files to {}'.format(output_dir))
+        writer = TransmartCopyWriter(output_dir)
+        if path.isdir(input):
+            filenames = [path.join(input, filename) for filename in os.listdir(input) if filename.endswith('.json')]
+        else:
+            filenames = [input]
+        for filename in filenames:
+            Console.info('Reading JSON from {}'.format(filename))
+            with open(filename, 'r') as input_file:
+                data = json.load(input_file)
+                collection = FhirReader.read(data)
+                result = Mapper.map(collection)
+                writer.write_collection(result)
+        Console.info('Done.')
     except LoaderException as e:
         Console.error(e)
         sys.exit(1)
