@@ -1,0 +1,2 @@
+click >= 7.0
+transmart-loader >= 0.1.0
