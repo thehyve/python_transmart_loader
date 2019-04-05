@@ -169,7 +169,7 @@ class TransmartCopyWriter(CollectionVisitor):
         if concept.concept_code not in self.concepts:
             row = [concept.concept_code, concept.concept_path, concept.name]
             self.concepts_writer.writerow(row)
-            self.concepts[concept.concept_code] = len(self.concepts)
+            self.concepts.add(concept.concept_code)
 
     def write_study_dimensions(self, study_index):
         for dimension_index in self.dimensions.values():
@@ -206,6 +206,8 @@ class TransmartCopyWriter(CollectionVisitor):
 
     def visit_visit(self, visit: Visit) -> None:
         """ Serialises a Visit entity to a TSV file.
+        NB: this requires all patient visits to be cleared before loading
+        new visits for the patient.
 
         :param visit: the Visit entity
         """
@@ -243,6 +245,7 @@ class TransmartCopyWriter(CollectionVisitor):
             return
         if node_path not in self.paths:
             self.tree_nodes_writer.writerow(row)
+            self.paths.add(node_path)
             for child in node.children:
                 self.visit_tree_node(child, level + 1, node_path)
 
@@ -262,7 +265,7 @@ class TransmartCopyWriter(CollectionVisitor):
             patient_mapping_rows = [
                 [patient.identifier, 'SUBJ_ID', patient_num]]
             for mapping in patient.mappings:
-                if mapping.source is not 'SUBJ_ID':
+                if mapping.source != 'SUBJ_ID':
                     patient_mapping_rows.append(
                         [mapping.identifier, mapping.source, patient_num])
             self.patient_mappings_writer.writerows(patient_mapping_rows)
@@ -277,6 +280,8 @@ class TransmartCopyWriter(CollectionVisitor):
 
     def visit_observation(self, observation: Observation) -> None:
         """ Serialises an Observation entity to a TSV file.
+
+        FIXME: fix date value serialisation
 
         :param observation: the Observation entity
         """
@@ -430,12 +435,12 @@ class TransmartCopyWriter(CollectionVisitor):
         self.observations_writer: TsvWriter = None
         self.init_writers()
 
-        self.concepts: Dict[str, int] = {}
+        self.concepts: Set[str] = set()
         self.studies: Dict[str, int] = {}
         self.dimensions: Dict[str, int] = {}
         self.trial_visits: Dict[Tuple[str, str], int] = {}
         self.patients: Dict[str, int] = {}
         self.visits: Dict[Tuple[str, str], int] = {}
-        self.paths: Set[str] = {}
+        self.paths: Set[str] = set()
 
         self.instance_num = 0
