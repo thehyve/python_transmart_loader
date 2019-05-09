@@ -8,9 +8,9 @@ class ValueType(Enum):
     """
     Type of an observed value
     """
-    Numeric = 1,
-    Categorical = 2,
-    Text = 3,
+    Numeric = 1
+    Categorical = 2
+    Text = 3
     Date = 4
 
 

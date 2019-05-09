@@ -57,7 +57,9 @@ setup(
         # dependencies for `python setup.py build_sphinx`
         'sphinx',
         'sphinx_rtd_theme',
-        'recommonmark'
+        'recommonmark',
+        # dependency for `python setup.py bdist_wheel`
+        'wheel'
     ],
     tests_require=[
         'pytest',

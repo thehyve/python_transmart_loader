@@ -8,7 +8,7 @@ Installation
 
 The package requires Python 3.6.
 
-To install ontology2transmart, do:
+To install ``ontology2transmart``, do:
 
 .. code-block:: console
 
@@ -29,13 +29,17 @@ Run tests (including coverage) with:
 Usage
 -----
 
-Read ontology from a collection of TSV files from DIMDI and write the output in transmart-copy
+Read ontology from a collection of TSV files from `DIMDI`_ and write the output in transmart-copy
 format to ``/path/to/output``. The output directory should be
 empty of not existing (then it will be created).
+E.g., the ICD-10-GM (German modification of ICD-10) is available at icd10gm2019syst-meta.zip_.
 
 .. code-block:: console
 
   python -m ontology2transmart.ontology2transmart input/ /path/to/output
+
+.. _DIMDI: https://www.dimdi.de
+.. _icd10gm2019syst-meta.zip: https://www.dimdi.de/dynamic/.downloads/klassifikationen/icd-10-gm/version2019/icd10gm2019syst-meta.zip
 
 
 License

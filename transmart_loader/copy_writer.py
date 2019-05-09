@@ -18,13 +18,13 @@ class VisualAttribute(Enum):
     """
     Visual attribute of an ontology node
     """
-    Leaf = 1,
-    Folder = 2,
-    Container = 3,
-    Study = 4,
-    Numerical = 5,
-    Text = 6,
-    Date = 7,
+    Leaf = 1
+    Folder = 2
+    Container = 3
+    Study = 4
+    Numerical = 5
+    Text = 6
+    Date = 7
     Categorical = 8
 
 

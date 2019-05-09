@@ -9,11 +9,43 @@ TranSMART loader
 .. |codecov| image:: https://codecov.io/gh/thehyve/python_transmart_loader/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/thehyve/python_transmart_loader
 
-Project Setup
-*************
+This package contains classes that represent the core domain objects stored in the TranSMART_ platform,
+an open source data sharing and analytics platform for translational biomedical research.
 
-Here we provide some details about the project setup. Most of the choices are explained in the `guide <https://guide.esciencecenter.nl>`_. Links to the relevant sections are included below.
-Feel free to remove this text when the development of the software package takes off.
+It also provides a utility that writes such objects to tab-separated files that can be loaded into
+a TranSMART database using the transmart-copy_ tool.
+
+.. _TranSMART: https://github.com/thehyve/transmart_core
+.. _transmart-copy: https://github.com/thehyve/transmart-core/tree/dev/transmart-copy
+
+
+Installation and usage
+**********************
+
+To install transmart_loader, do:
+
+.. code-block:: console
+
+  git clone https://github.com/thehyve/python_transmart_loader.git
+  cd python_transmart_loader
+  pip install .
+
+
+Usage
+------
+
+Usage examples can be found in the `<examples>`_ directory:
+
+- `fhir2transmart <examples/fhir2transmart>`_: a tool that translates core `HL7 FHIR`_ resources to the TranSMART data model.  
+- `ontology2transmart <examples/ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
+  to TranSMART ontologies.
+
+.. _`HL7 FHIR`: http://hl7.org/fhir/
+.. _DIMDI: https://www.dimdi.de
+
+
+Development
+*************
 
 For a quick reference on software development, we refer to `the software guide checklist <https://guide.esciencecenter.nl/best_practices/checklist.html>`_.
 
@@ -27,37 +59,17 @@ Add or remove Python versions based on project requirements. `The guide <https:/
 Package management and dependencies
 -----------------------------------
 
-You can use either `pip` or `conda` for installing dependencies and package management. This repository does not force you to use one or the other, as project requirements differ. For advice on what to use, please check `the relevant section of the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#dependencies-and-package-management>`_.
+This project uses `pip` for installing dependencies and package management.
 
 * Dependencies should be added to `setup.py` in the `install_requires` list.
-
-Packaging/One command install
------------------------------
-
-You can distribute your code using pipy or conda. Again, the project template does not enforce the use of either one. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#building-and-packaging-code>`_ can help you decide which tool to use for packaging.
-
-If you decide to use pypi for distributing you code, you can configure travis to upload to pypi when you make a release. If you specified your pypi user name during generation of this package, the ``.travis.yml`` file contains a section that looks like:
-
-.. code-block:: yaml
-
-  deploy:
-    provider: pypi
-    user: no_pypi_travis_deployment
-    password:
-      secure: FIXME; see README for more info
-   on:
-      tags: true
-      branch: master
-
-Before this actually works, you need to add an encrypted password for your pypi account. The `travis documentation<https://docs.travis-ci.com/user/deployment/pypi/>_` specifies how to do this.
 
 Testing and code coverage
 -------------------------
 
-* Tests should be put in the ``tests`` folder.
+* Tests are in the ``tests`` folder.
 * The ``tests`` folder contains:
 
-  - Example tests that you should replace with your own meaningful tests (file: ``test_transmart_loader``)
+  - A test if files for `transmart-copy` are generated for fake data (file: ``test_transmart_loader``)
   - A test that checks whether your code conforms to the Python style guide (PEP 8) (file: ``test_lint.py``)
 
 * The testing framework used is `PyTest <https://pytest.org>`_
@@ -66,42 +78,24 @@ Testing and code coverage
 
 * Tests can be run with ``python setup.py test``
 
-  - This is configured in ``setup.py`` and ``setup.cfg``
-
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#testing>`_
-
 Documentation
 -------------
 
-* Documentation should be put in the ``docs`` folder. The contents have been generated using ``sphinx-quickstart`` (Sphinx version 1.6.5).
-* We recommend writing the documentation using Restructured Text (reST) and Google style docstrings.
-
-  - `Restructured Text (reST) and Sphinx CheatSheet <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
-  - `Google style docstring examples <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html>`_.
-
-* The documentation is set up with the Read the Docs Sphinx Theme.
-
-  - Check out the `configuration options <https://sphinx-rtd-theme.readthedocs.io/en/latest/>`_.
+* Documentation should be put in the ``docs`` folder.
 
 * To generate html documentation run ``python setup.py build_sphinx``
 
-  - This is configured in ``setup.cfg``
   - Alternatively, run ``make html`` in the ``docs`` folder.
 
-* The ``docs/_templates`` directory contains an (empty) ``.gitignore`` file, to be able to add it to the repository. This file can be safely removed (or you can just leave it there).
 * To put the documentation on `Read the Docs <https://readthedocs.org>`_, log in to your Read the Docs account, and import the repository (under 'My Projects').
 
   - Include the link to the documentation in this README_.
-
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#writingdocumentation>`_
 
 Coding style conventions and code quality
 -----------------------------------------
 
 * Check your code style with ``prospector``
 * You may need run ``pip install .[dev]`` first, to install the required dependencies
-* You can use ``yapf`` to fix the readability of your code style and ``isort`` to format and group your imports
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#coding-style-conventions>`_
 
 Package version number
 ----------------------
@@ -114,26 +108,6 @@ CHANGELOG.rst
 -------------
 
 * Document changes to your software package
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/releases.html#changelogmd>`_
-
-CITATION.cff
-------------
-
-* To allow others to cite your software, add a ``CITATION.cff`` file
-* It only makes sense to do this once there is something to cite (e.g., a software release with a DOI).
-* Follow the `making software citable <https://guide.esciencecenter.nl/citable_software/making_software_citable.html>`_ section in the guide.
-
-CODE_OF_CONDUCT.rst
--------------------
-
-* Information about how to behave professionally
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/documentation.html#code-of-conduct>`_
-
-CONTRIBUTING.rst
-----------------
-
-* Information about how to contribute to this software package
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/documentation.html#contribution-guidelines>`_
 
 MANIFEST.in
 -----------
@@ -145,25 +119,6 @@ NOTICE
 ------
 
 * List of attributions of this project and Apache-license dependencies
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/licensing.html#notice>`_
-
-Installation
-------------
-
-To install transmart_loader, do:
-
-.. code-block:: console
-
-  git clone https://github.com/thehyve/python_transmart_loader.git
-  cd python_transmart_loader
-  pip install .
-
-
-Run tests (including coverage) with:
-
-.. code-block:: console
-
-  python setup.py test
 
 
 Documentation
@@ -173,11 +128,6 @@ Documentation
 
 Include a link to your project's full documentation here.
 
-Contributing
-************
-
-If you want to contribute to the development of TranSMART loader,
-have a look at the `contribution guidelines <CONTRIBUTING.rst>`_.
 
 License
 *******

@@ -8,7 +8,7 @@ Installation
 
 The package requires Python 3.6.
 
-To install fhir2transmart, do:
+To install ``fhir2transmart``, do:
 
 .. code-block:: console
 
@@ -36,6 +36,10 @@ empty of not existing (then it will be created).
 .. code-block:: console
 
   python -m fhir2transmart.fhir2transmart input.json /path/to/output
+
+Example data is available at `MITRE SyntheticMass`_.
+
+.. _`MITRE SyntheticMass`: https://syntheticmass.mitre.org/download.html
 
 
 License
