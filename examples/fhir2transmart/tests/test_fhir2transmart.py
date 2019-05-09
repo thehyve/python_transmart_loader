@@ -123,14 +123,14 @@ def simple_fhir_bundle() -> dict:
 
 
 def test_read_empty_bundle(empty_fhir_bundle):
-    collection = FhirReader().read_bundle(empty_fhir_bundle)
+    collection = FhirReader.read(empty_fhir_bundle)
     result = Mapper.map(collection)
     assert len(result.studies) == 1
     assert len(result.patients) == 0
 
 
 def test_read_simple_bundle(simple_fhir_bundle):
-    collection = FhirReader().read_bundle(simple_fhir_bundle)
+    collection = FhirReader.read(simple_fhir_bundle)
     result: DataCollection = Mapper.map(collection)
     assert len(result.studies) == 1
     assert len(result.patients) == 2

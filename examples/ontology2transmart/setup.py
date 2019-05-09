@@ -12,9 +12,9 @@ if sys.version_info < (3, 6):
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# To update the package version number, edit transmart_loader/__version__.py
+# To update the package version number, edit fhir2transmart/__version__.py
 version = {}
-with open(os.path.join(here, 'transmart_loader', '__version__.py')) as f:
+with open(os.path.join(here, 'ontology2transmart', '__version__.py')) as f:
     exec(f.read(), version)
 
 with open('README.rst') as readme_file:
@@ -24,22 +24,22 @@ with open('requirements.txt', 'r') as f:
     required_packages = f.read().splitlines()
 
 setup(
-    name='transmart_loader',
+    name='ontology2transmart',
     version=version['__version__'],
-    description="Python library for loading data to TranSMART using transmart-copy",
+    description="Example ontology to TranSMART loader",
     long_description=readme + '\n\n',
     author="Gijs Kant",
     author_email='gijs@thehyve.nl',
     url='https://github.com/thehyve/python_transmart_loader',
     packages=[
-        'transmart_loader',
+        'ontology2transmart',
     ],
-    package_dir={'transmart_loader':
-                 'transmart_loader'},
+    package_dir={'ontology2transmart':
+                 'ontology2transmart'},
     include_package_data=True,
     license="GNU General Public License v3 or later",
     zip_safe=False,
-    keywords='transmart_loader',
+    keywords='ontology2transmart',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -57,9 +57,7 @@ setup(
         # dependencies for `python setup.py build_sphinx`
         'sphinx',
         'sphinx_rtd_theme',
-        'recommonmark',
-        # dependency for `python setup.py bdist_wheel`
-        'wheel'
+        'recommonmark'
     ],
     tests_require=[
         'pytest',

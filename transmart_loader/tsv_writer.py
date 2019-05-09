@@ -12,8 +12,8 @@ class TsvWriter(CsvWriter):
     def writerow(self, row:  Sequence[Any]) -> None:
         self.writer.writerow(row)
 
-    def writerows(self, row:  Sequence[Sequence[Any]]) -> None:
-        self.writer.writerows(row)
+    def writerows(self, rows:  Sequence[Sequence[Any]]) -> None:
+        self.writer.writerows(rows)
 
     def close(self) -> None:
         if self.file:

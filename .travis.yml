@@ -1,7 +1,12 @@
 # Config file for automatic testing at travis-ci.org
 language: python
-python:
-  - "3.6"
+
+matrix:
+  include:
+    - python: "3.6"
+    - python: "3.7"
+      dist: xenial
+      sudo: true
 
 # command to install dependencies
 install:
@@ -10,6 +15,17 @@ install:
 
 # command to run tests
 script: python setup.py test
+
+#deploy:
+#  provider: pypi
+#  user: no_pypi_travis_deployment
+#  password:
+#    secure: FIXME; see README for more info
+#  on:
+#    tags: true
+#    branch: master
+## Before this actually works, you need to add an encrypted password for your pypi account.
+##  The `travis documentation specifies how to do this: https://docs.travis-ci.com/user/deployment/pypi/
 
 after_success:
   - codecov
