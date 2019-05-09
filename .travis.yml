@@ -16,16 +16,16 @@ install:
 # command to run tests
 script: python setup.py test
 
-#deploy:
-#  provider: pypi
-#  user: no_pypi_travis_deployment
-#  password:
-#    secure: FIXME; see README for more info
-#  on:
-#    tags: true
-#    branch: master
-## Before this actually works, you need to add an encrypted password for your pypi account.
-##  The `travis documentation specifies how to do this: https://docs.travis-ci.com/user/deployment/pypi/
+deploy:
+  provider: pypi
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
+  user: gijskant
+  password:
+    secure: MH6TRAPPF98iQ8jJY0YazN0Fgp9bCnaU8OhW3XCfcxnGVpV9ZzZgr0tEEQ18O2j/qtmBePaHm34cR0xumJnNIF/d0XgqnASpD6bPfZesr+tEAuk/p0etZ2eXQNpaIIgkTeDI8JVLlcjNp/EcasDzecC6kiHU0SWjeWiMIgGldz0Q3rORTbtxj3pyXIG1B36lZxJgWvV2DxhyX8R70YWwvkcHKbE+CZWuLag7Bo//xuUSP80PzzYsJkJrFvHVvwLdtepiAqAHIP4GNrbdwCaiB6wmvpQmm+61byQHc23rPwZc7757VlU2PfE9XE8/Occ+vLGKZwg+F4gcFwWHeFrtZ7Bf4a2muJd0qsKK669hIGMAZcZ4GTi4SH+0jvsuv4QZ/Cj/Of0eCFYfJdRRSXRWLHawqhIp38d5lwqeFDRODO+UTLiA0+gt20zPEJsalTGzOP1zdwVi5N5y5lS1t22m3jDXugYZNAsGWF67QmsThsNlPBa+U6wWf5DepXACLdVFgLDU5KXvoJoDaBYKU2h9Ip4OzjhJC/MJBaHcrwE6FdDpzE9/Eso6dFhV3kR9by+I3R8ervv3NYTQxoSeQk9w6BhpZjf9vkdgPns3Gkhpl9IR8gEy/0S5XQ0y8LjMYQSqrTo5obh1rcneaH2egJZ4sOMXOb+TB4/YsvHD/RvsA9I=
+  on:
+    tags: true
+    branch: master
 
 after_success:
   - codecov
