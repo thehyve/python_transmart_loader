@@ -34,10 +34,10 @@ To install transmart_loader, do:
 Usage
 ------
 
-Usage examples can be found in the `<examples>`_ directory:
+Usage examples can be found in the `examples<https://github.com/thehyve/python_transmart_loader/tree/master/examples>`_ directory:
 
-- `fhir2transmart <examples/fhir2transmart>`_: a tool that translates core `HL7 FHIR`_ resources to the TranSMART data model.  
-- `ontology2transmart <examples/ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
+- `fhir2transmart <https://github.com/thehyve/python_transmart_loader/tree/master/examples/fhir2transmart>`_: a tool that translates core `HL7 FHIR`_ resources to the TranSMART data model.  
+- `ontology2transmart <https://github.com/thehyve/python_transmart_loader/tree/master/examples/ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
   to TranSMART ontologies.
 
 .. _`HL7 FHIR`: http://hl7.org/fhir/
@@ -96,29 +96,6 @@ Coding style conventions and code quality
 
 * Check your code style with ``prospector``
 * You may need run ``pip install .[dev]`` first, to install the required dependencies
-
-Package version number
-----------------------
-
-* We recommend using `semantic versioning <https://guide.esciencecenter.nl/best_practices/releases.html#semantic-versioning>`_.
-* For convenience, the package version is stored in a single place: ``transmart_loader/__version__.py``. For updating the version number, you only have to change this file.
-* Don't forget to update the version number before `making a release <https://guide.esciencecenter.nl/best_practices/releases.html>`_!
-
-CHANGELOG.rst
--------------
-
-* Document changes to your software package
-
-MANIFEST.in
------------
-
-* List non-Python files that should be included in a source distribution
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#building-and-packaging-code>`_
-
-NOTICE
-------
-
-* List of attributions of this project and Apache-license dependencies
 
 
 Documentation
