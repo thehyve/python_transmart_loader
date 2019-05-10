@@ -3,12 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to TranSMART loader's documentation!
+TranSMART loader
 ==========================================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+.. toctree::
+
+  datamodel
 
 
 API Reference
@@ -20,9 +24,7 @@ API Reference
   transmart_loader <apidocs/transmart_loader.rst>
 
 
-Indices and tables
+Index
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

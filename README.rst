@@ -2,12 +2,20 @@
 TranSMART loader
 ################################################################################
 
-|Build status| |codecov|
+|Build status| |codecov| |pypi| |downloads|
 
 .. |Build status| image:: https://travis-ci.org/thehyve/python_transmart_loader.svg?branch=master
+   :alt: Build status
    :target: https://travis-ci.org/thehyve/python_transmart_loader/branches
 .. |codecov| image:: https://codecov.io/gh/thehyve/python_transmart_loader/branch/master/graph/badge.svg
+   :alt: codecov
    :target: https://codecov.io/gh/thehyve/python_transmart_loader
+.. |pypi| image:: https://img.shields.io/pypi/v/transmart_loader.svg
+   :alt: PyPI
+   :target: https://pypi.org/project/transmart_loader/
+.. |downloads| image:: https://img.shields.io/pypi/dm/transmart-loader.svg
+   :alt: PyPI - Downloads
+   :target: https://pypi.org/project/transmart_loader/
 
 This package contains classes that represent the core domain objects stored in the TranSMART_ platform,
 an open source data sharing and analytics platform for translational biomedical research.
@@ -42,6 +50,12 @@ Usage examples can be found in the `examples <https://github.com/thehyve/python_
 
 .. _`HL7 FHIR`: http://hl7.org/fhir/
 .. _DIMDI: https://www.dimdi.de
+
+
+Known issues
+************
+
+- Date values are not correctly translated
 
 
 Development
