@@ -1,6 +1,5 @@
-################################################################################
 TranSMART loader
-################################################################################
+================
 
 |Build status| |codecov| |pypi| |downloads|
 
@@ -26,11 +25,20 @@ a TranSMART database using the transmart-copy_ tool.
 .. _TranSMART: https://github.com/thehyve/transmart_core
 .. _transmart-copy: https://github.com/thehyve/transmart-core/tree/dev/transmart-copy
 
+⚠️ Note: this is a very preliminary version, still under development.
+Issues can be reported at https://github.com/thehyve/python_transmart_loader/issues.
+
 
 Installation and usage
 **********************
 
 To install transmart_loader, do:
+
+.. code-block:: console
+
+  pip install transmart-loader
+
+or from sources:
 
 .. code-block:: console
 
