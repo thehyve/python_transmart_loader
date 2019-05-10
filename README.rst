@@ -42,10 +42,10 @@ To install transmart_loader, do:
 Usage
 ------
 
-Usage examples can be found in the `examples <https://github.com/thehyve/python_transmart_loader/tree/master/examples>`_ directory:
+Usage examples can be found in these projects: 
 
 - `fhir2transmart <https://github.com/thehyve/python_fhir2transmart>`_: a tool that translates core `HL7 FHIR`_ resources to the TranSMART data model.  
-- `ontology2transmart <https://github.com/thehyve/python_transmart_loader/tree/master/examples/ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
+- `ontology2transmart <https://github.com/thehyve/python_ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
   to TranSMART ontologies.
 
 .. _`HL7 FHIR`: http://hl7.org/fhir/
