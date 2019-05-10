@@ -88,8 +88,8 @@ class Dimension:
     """
     def __init__(self,
                  name: str,
-                 modifier_code: Optional[str],
-                 value_type: Optional[ValueType]):
+                 modifier_code: Optional[str] = None,
+                 value_type: Optional[ValueType] = None):
         self.name = name
         self.modifier_code = modifier_code
         self.value_type = value_type
@@ -101,9 +101,9 @@ class TrialVisit:
     """
     def __init__(self,
                  study: Study,
-                 rel_time_unit: Optional[str],
-                 rel_time: Optional[int],
-                 rel_time_label: str):
+                 rel_time_label: str,
+                 rel_time_unit: Optional[str] = None,
+                 rel_time: Optional[int] = None):
         self.study = study
         self.rel_time_unit = rel_time_unit
         self.rel_time = rel_time

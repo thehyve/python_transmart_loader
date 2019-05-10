@@ -46,7 +46,7 @@ def simple_collection() -> DataCollection:
                 ValueType.Categorical)]
     studies: List[Study] = [Study('test', 'Test study')]
     trial_visits: List[TrialVisit] = [
-        TrialVisit(studies[0], 'Week', 1, 'Week 1')]
+        TrialVisit(studies[0], 'Week 1', 'Week', 1)]
     patients: List[Patient] = [Patient('SUBJ0', 'male', [])]
     visits: List[Visit] = [
         Visit(patients[0], 'visit1', None, None, None, None, None, None)]

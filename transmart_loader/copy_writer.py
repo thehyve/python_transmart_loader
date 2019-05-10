@@ -36,11 +36,11 @@ ValueTypeToVisualAttribute = {
 }
 
 
-study_dimension = Dimension('study', None, None)
-concept_dimension = Dimension('concept', None, None)
-patient_dimension = Dimension('patient', None, None)
-start_time_dimension = Dimension('start time', None, None)
-visit_dimension = Dimension('visit', None, None)
+study_dimension = Dimension('study')
+concept_dimension = Dimension('concept')
+patient_dimension = Dimension('patient')
+start_time_dimension = Dimension('start time')
+visit_dimension = Dimension('visit')
 
 
 def get_study_node_row(node: StudyNode, level, node_path):
