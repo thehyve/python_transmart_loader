@@ -1,7 +1,7 @@
 TranSMART loader
 ================
 
-|Build status| |codecov| |pypi| |downloads|
+|Build status| |codecov| |pypi| |status| |downloads| |license|
 
 .. |Build status| image:: https://travis-ci.org/thehyve/python_transmart_loader.svg?branch=master
    :alt: Build status
@@ -12,9 +12,13 @@ TranSMART loader
 .. |pypi| image:: https://img.shields.io/pypi/v/transmart_loader.svg
    :alt: PyPI
    :target: https://pypi.org/project/transmart_loader/
+.. |status| image:: https://img.shields.io/pypi/status/transmart-loader.svg
+   :alt: PyPI - Status
 .. |downloads| image:: https://img.shields.io/pypi/dm/transmart-loader.svg
    :alt: PyPI - Downloads
-   :target: https://pypi.org/project/transmart_loader/
+.. |license| image:: https://img.shields.io/pypi/l/transmart_loader.svg
+   :alt: MIT license
+   :target: LICENSE
 
 This package contains classes that represent the core domain objects stored in the TranSMART_ platform,
 an open source data sharing and analytics platform for translational biomedical research.
@@ -58,6 +62,15 @@ Usage examples can be found in these projects:
 
 .. _`HL7 FHIR`: http://hl7.org/fhir/
 .. _DIMDI: https://www.dimdi.de
+
+
+Documentation
+*************
+
+Full documentation of the package is available at `Read the Docs`_.
+
+.. _Read the Docs: https://transmart-loader.readthedocs.io
+
 
 
 Known issues
@@ -107,25 +120,11 @@ Documentation
 
 * To generate html documentation run ``python setup.py build_sphinx``
 
-  - Alternatively, run ``make html`` in the ``docs`` folder.
-
-* To put the documentation on `Read the Docs <https://readthedocs.org>`_, log in to your Read the Docs account, and import the repository (under 'My Projects').
-
-  - Include the link to the documentation in this README_.
-
 Coding style conventions and code quality
 -----------------------------------------
 
 * Check your code style with ``prospector``
 * You may need run ``pip install .[dev]`` first, to install the required dependencies
-
-
-Documentation
-*************
-
-.. _README:
-
-Include a link to your project's full documentation here.
 
 
 License
