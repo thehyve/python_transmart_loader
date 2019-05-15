@@ -244,6 +244,8 @@ class TransmartCopyWriter(CollectionVisitor):
             Console.warning('Skipping node {}'.format(node_path))
             return
         if node_path not in self.paths:
+            if len(node_path) > 900:
+                Console.warning("Path too long: " + node_path)
             self.tree_nodes_writer.writerow(row)
             self.paths.add(node_path)
             for child in node.children:
