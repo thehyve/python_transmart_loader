@@ -14,7 +14,7 @@ class ValueType(Enum):
     Date = 4
 
 
-class PatientMapping:
+class IdentifierMapping:
     """
     Patient identifiers
     """
@@ -30,7 +30,7 @@ class Patient:
     def __init__(self,
                  identifier: str,
                  sex: str,
-                 mappings: Sequence[PatientMapping]):
+                 mappings: Sequence[IdentifierMapping]):
         self.identifier = identifier
         self.sex = sex
         self.mappings = mappings
@@ -62,15 +62,17 @@ class Visit:
                  end_date: Optional[date],
                  inout: Optional[str],
                  location: Optional[str],
-                 length_of_stay: Optional[int]):
+                 length_of_stay: Optional[int],
+                 mappings: Sequence[IdentifierMapping]):
         self.patient = patient
-        self.identifier = identifier  # TODO: remove identifier field
+        self.identifier = identifier
         self.active_status = active_status
         self.start_date = start_date
         self.end_date = end_date
         self.inout = inout
         self.location = location
         self.length_of_stay = length_of_stay
+        self.mappings = mappings
 
 
 class Study:
