@@ -63,9 +63,10 @@ setup(
         'wheel'
     ],
     tests_require=[
+        'pycodestyle',
         'pytest',
         'pytest-cov',
-        'pycodestyle',
+        'python-dateutil'
     ],
     extras_require={
         'dev':  ['prospector[with_pyroma]', 'yapf', 'isort'],
