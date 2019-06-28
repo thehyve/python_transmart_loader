@@ -1,5 +1,6 @@
 import os
-from datetime import date, datetime
+from time import mktime
+from datetime import date, datetime, timezone
 from enum import Enum
 from os import path
 from typing import Set, Tuple, Dict, Optional
@@ -98,10 +99,28 @@ def get_folder_node_row(node: TreeNode, level, node_path):
     return row
 
 
+def to_utc(value: date) -> date:
+    if isinstance(value, datetime):
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+
 def format_date(value: Optional[date]) -> Optional[str]:
     if value is None:
         return None
-    return str(value)
+    return str(to_utc(value))
+
+
+def microseconds(value: date) -> float:
+    # numerical value is the timestamp in microseconds
+    if isinstance(value, datetime):
+        dt: datetime = datetime(value.year, value.month, value.day,
+                                value.hour, value.minute, value.second,
+                                tzinfo=timezone.utc)
+    else:
+        dt: datetime = datetime(value.year, value.month, value.day,
+                                tzinfo=timezone.utc)
+    return dt.timestamp() * 1000
 
 
 class TransmartCopyWriter(CollectionVisitor):
@@ -322,14 +341,11 @@ class TransmartCopyWriter(CollectionVisitor):
         if value_type is ValueType.Numeric:
             number_value = value.value
         elif value_type is ValueType.Date:
-            if isinstance(value.value, datetime):
-                number_value = value.value.timestamp() if value.value else None
-            else:
-                date_value: date = value.value()
-                if date_value:
-                    datetime_value = datetime(
-                        date_value.year, date_value.month, date_value.day)
-                    number_value = datetime_value.timestamp()
+            if value.value:
+                if not isinstance(value.value, date):
+                    raise LoaderException(
+                        'Invalid date type: {}'.format(type(value.value)))
+                number_value = microseconds(value.value)
         elif value_type is ValueType.Categorical:
             text_value = value.value
         elif value_type is ValueType.Text:
