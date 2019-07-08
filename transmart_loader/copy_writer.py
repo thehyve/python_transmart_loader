@@ -125,6 +125,9 @@ class TransmartCopyWriter(CollectionVisitor):
                                'patient_ide_source',
                                'patient_num']
     patients_header = ['patient_num', 'sex_cd']
+    encounter_mappings_header = ['encounter_ide',
+                                 'encounter_ide_source',
+                                 'encounter_num']
     visits_header = ['encounter_num',
                      'patient_num',
                      'active_status_cd',
@@ -205,26 +208,32 @@ class TransmartCopyWriter(CollectionVisitor):
             self.trial_visits[trial_visit_id] = len(self.trial_visits)
 
     def visit_visit(self, visit: Visit) -> None:
-        """ Serialises a Visit entity to a TSV file.
-        NB: this requires all patient visits to be cleared before loading
-        new visits for the patient.
+        """ Serialises a Visit entity and related EncounterMapping
+        entities to a TSV file.
 
         :param visit: the Visit entity
         """
-        visit_key = (visit.patient.identifier, visit.identifier)
-        if visit_key not in self.visits:
-            row = [len(self.visits),
-                   self.patients[visit.patient.identifier],
-                   visit.active_status,
-                   format_date(visit.start_date),
-                   format_date(visit.end_date),
-                   visit.inout,
-                   visit.location,
-                   None,
-                   visit.length_of_stay,
-                   None]
-            self.visits_writer.writerow(row)
-            self.visits[visit_key] = len(self.visits)
+        if visit.identifier not in self.visits:
+            encounter_num = len(self.visits)
+            visit_row = [encounter_num,
+                         self.patients[visit.patient.identifier],
+                         visit.active_status,
+                         format_date(visit.start_date),
+                         format_date(visit.end_date),
+                         visit.inout,
+                         visit.location,
+                         None,
+                         visit.length_of_stay,
+                         None]
+            self.visits_writer.writerow(visit_row)
+            encounter_mapping_rows = [
+                [visit.identifier, 'VISIT_ID', encounter_num]]
+            for mapping in visit.mappings:
+                if mapping.source != 'VISIT_ID':
+                    encounter_mapping_rows.append(
+                        [mapping.identifier, mapping.source, encounter_num])
+            self.encounter_mappings_writer.writerows(encounter_mapping_rows)
+            self.visits[visit.identifier] = encounter_num
 
     def visit_tree_node(self, node: TreeNode, level=0, parent_path='\\'):
         """ Serialises a TreeNode entity and its children to a TSV file.
@@ -291,9 +300,7 @@ class TransmartCopyWriter(CollectionVisitor):
                           observation.trial_visit.rel_time_label)
         visit_index = None
         if observation.visit:
-            visit_key = (observation.patient.identifier,
-                         observation.visit.identifier)
-            visit_index = self.visits[visit_key]
+            visit_index = self.visits[observation.visit.identifier]
         if visit_index is None:
             visit_index = -1
         value = observation.value
@@ -412,6 +419,9 @@ class TransmartCopyWriter(CollectionVisitor):
         self.patients_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/patient_dimension.tsv')
         self.patients_writer.writerow(self.patients_header)
+        self.encounter_mappings_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/encounter_mapping.tsv')
+        self.encounter_mappings_writer.writerow(self.encounter_mappings_header)
         self.visits_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/visit_dimension.tsv')
         self.visits_writer.writerow(self.visits_header)
@@ -432,6 +442,7 @@ class TransmartCopyWriter(CollectionVisitor):
         self.trial_visits_writer: TsvWriter = None
         self.patient_mappings_writer: TsvWriter = None
         self.patients_writer: TsvWriter = None
+        self.encounter_mappings_writer: TsvWriter = None
         self.visits_writer: TsvWriter = None
         self.tree_nodes_writer: TsvWriter = None
         self.observations_writer: TsvWriter = None
@@ -442,7 +453,7 @@ class TransmartCopyWriter(CollectionVisitor):
         self.dimensions: Dict[str, int] = {}
         self.trial_visits: Dict[Tuple[str, str], int] = {}
         self.patients: Dict[str, int] = {}
-        self.visits: Dict[Tuple[str, str], int] = {}
+        self.visits: Dict[str, int] = {}
         self.paths: Set[str] = set()
 
         self.instance_num = 0

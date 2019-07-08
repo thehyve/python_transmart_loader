@@ -49,7 +49,7 @@ def simple_collection() -> DataCollection:
         TrialVisit(studies[0], 'Week 1', 'Week', 1)]
     patients: List[Patient] = [Patient('SUBJ0', 'male', [])]
     visits: List[Visit] = [
-        Visit(patients[0], 'visit1', None, None, None, None, None, None)]
+        Visit(patients[0], 'visit1', None, None, None, None, None, None, [])]
     top_node = StudyNode(studies[0])
     top_node.add_child(ConceptNode(concepts[0]))
     ontology: List[TreeNode] = [top_node]
@@ -67,7 +67,9 @@ def test_load_empty_collection(tmp_path, empty_collection):
     writer.write_collection(empty_collection)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/encounter_mapping.tsv')
     assert path.exists(target_path + '/i2b2demodata/visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/study.tsv')
     assert path.exists(target_path + '/i2b2metadata/dimension_description.tsv')
@@ -83,7 +85,9 @@ def test_load_simple_collection(tmp_path, simple_collection):
     writer.write_collection(simple_collection)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/encounter_mapping.tsv')
     assert path.exists(target_path + '/i2b2demodata/visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/study.tsv')
     assert path.exists(target_path + '/i2b2metadata/dimension_description.tsv')
