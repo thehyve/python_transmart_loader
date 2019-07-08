@@ -3,8 +3,8 @@ from typing import List
 from transmart_loader.collection_visitor import CollectionVisitor
 from transmart_loader.console import Console
 from transmart_loader.loader_exception import LoaderException
-from transmart_loader.transmart import TreeNode, DataCollection, Observation,\
-    Patient, Visit, TrialVisit, Study, Concept
+from transmart_loader.transmart import TreeNode, DataCollection, Observation, \
+    Patient, Visit, TrialVisit, Study, Concept, Modifier, Dimension
 
 
 class CollectionValidator(CollectionVisitor):
@@ -13,6 +13,12 @@ class CollectionValidator(CollectionVisitor):
     """
 
     def visit_concept(self, concept: Concept) -> None:
+        pass
+
+    def visit_modifier(self, modifier: Modifier) -> None:
+        pass
+
+    def visit_dimension(self, dimension: Dimension) -> None:
         pass
 
     def visit_study(self, study: Study) -> None:

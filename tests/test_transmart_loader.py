@@ -3,7 +3,7 @@
 
 """Tests for the transmart_loader module.
 """
-from datetime import date
+from datetime import date, datetime
 from os import path
 from typing import List
 
@@ -11,31 +11,25 @@ import pytest
 
 from transmart_loader.copy_writer import TransmartCopyWriter
 from transmart_loader.transmart import DataCollection, Concept, Study, \
-    TrialVisit, Visit, TreeNode, Patient, Observation, ValueType, StudyNode,\
-    ConceptNode, CategoricalValue
-
-
-def test_something():
-    assert True
-
-
-def test_with_error():
-    with pytest.raises(ValueError):
-        # Do something that raises a ValueError
-        raise ValueError
+    TrialVisit, Visit, TreeNode, Patient, Observation, ValueType, StudyNode, \
+    ConceptNode, CategoricalValue, Modifier, ObservationMetadata, \
+    TextValue, DateValue, Dimension, DimensionType
 
 
 @pytest.fixture
 def empty_collection() -> DataCollection:
     concepts: List[Concept] = []
+    modifiers: List[Modifier] = []
+    dimensions: List[Dimension] = []
     studies: List[Study] = []
     trial_visits: List[TrialVisit] = []
     patients: List[Patient] = []
     visits: List[Visit] = []
     ontology: List[TreeNode] = []
     observations: List[Observation] = []
-    collection = DataCollection(concepts, studies, trial_visits, visits,
-                                ontology, patients, observations)
+    collection = DataCollection(concepts, modifiers, dimensions, studies,
+                                trial_visits, visits, ontology, patients,
+                                observations)
     return collection
 
 
@@ -43,7 +37,17 @@ def empty_collection() -> DataCollection:
 def simple_collection() -> DataCollection:
     concepts: List[Concept] = [
         Concept('dummy_code', 'Dummy variable', '\\dummy\\path',
-                ValueType.Categorical)]
+                ValueType.Categorical),
+        Concept('diagnosis_date', 'Diagnosis date', '\\diagnosis_date',
+                ValueType.Date)]
+    modifiers: List[Modifier] = [
+        Modifier('missing_value', 'Missing value', '\\missing_value',
+                 ValueType.Text),
+        Modifier('sample_id', 'Sample ID', '\\sample_id',
+                 ValueType.Numeric)]
+    dimensions: List[Dimension] = [
+        Dimension('sample', modifiers[1], DimensionType.Subject, 1)
+    ]
     studies: List[Study] = [Study('test', 'Test study')]
     trial_visits: List[TrialVisit] = [
         TrialVisit(studies[0], 'Week 1', 'Week', 1)]
@@ -52,12 +56,25 @@ def simple_collection() -> DataCollection:
         Visit(patients[0], 'visit1', None, None, None, None, None, None, [])]
     top_node = StudyNode(studies[0])
     top_node.add_child(ConceptNode(concepts[0]))
+    top_node.add_child(ConceptNode(concepts[1]))
     ontology: List[TreeNode] = [top_node]
     observations: List[Observation] = [
         Observation(patients[0], concepts[0], visits[0], trial_visits[0],
-                    date(2019, 3, 28), None, CategoricalValue('value'))]
-    collection = DataCollection(concepts, studies, trial_visits, visits,
-                                ontology, patients, observations)
+                    date(2019, 3, 28), None, CategoricalValue('value')),
+        Observation(patients[0], concepts[0], visits[0], trial_visits[0],
+                    datetime(2019, 6, 26, 12, 34, 00),
+                    datetime(2019, 6, 28, 16, 46, 13, 345),
+                    CategoricalValue(None),
+                    ObservationMetadata({
+                        modifiers[0]: TextValue('Invalid')
+                    })),
+        Observation(patients[0], concepts[1], visits[0], trial_visits[0],
+                    datetime(2019, 6, 26, 13, 50, 10), None,
+                    DateValue(datetime(2018, 4, 30, 17, 10, 00)))
+    ]
+    collection = DataCollection(concepts, modifiers, dimensions, studies,
+                                trial_visits, visits, ontology, patients,
+                                observations)
     return collection
 
 
@@ -67,6 +84,7 @@ def test_load_empty_collection(tmp_path, empty_collection):
     writer.write_collection(empty_collection)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/encounter_mapping.tsv')
@@ -85,6 +103,7 @@ def test_load_simple_collection(tmp_path, simple_collection):
     writer.write_collection(simple_collection)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/encounter_mapping.tsv')
