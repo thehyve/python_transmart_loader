@@ -1,5 +1,6 @@
 import os
-from datetime import date, datetime
+from time import mktime
+from datetime import date, datetime, timezone
 from enum import Enum
 from os import path
 from typing import Set, Tuple, Dict, Optional
@@ -9,8 +10,8 @@ from transmart_loader.collection_visitor import CollectionVisitor
 from transmart_loader.console import Console
 from transmart_loader.loader_exception import LoaderException
 from transmart_loader.transmart import DataCollection, Concept, Observation, \
-    Patient, TreeNode, Visit, TrialVisit, \
-    Study, ValueType, StudyNode, ConceptNode, Dimension
+    Patient, TreeNode, Visit, TrialVisit, Study, ValueType, StudyNode, \
+    ConceptNode, Dimension, Modifier, Value, DimensionType
 from transmart_loader.tsv_writer import TsvWriter
 
 
@@ -98,13 +99,28 @@ def get_folder_node_row(node: TreeNode, level, node_path):
     return row
 
 
-date_format = '%Y-%m-%d %H:%M:%S'
+def to_utc(value: date) -> date:
+    if isinstance(value, datetime):
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
 
 
 def format_date(value: Optional[date]) -> Optional[str]:
     if value is None:
         return None
-    return value.strftime(date_format)
+    return str(to_utc(value))
+
+
+def microseconds(value: date) -> float:
+    # numerical value is the timestamp in microseconds
+    if isinstance(value, datetime):
+        dt: datetime = datetime(value.year, value.month, value.day,
+                                value.hour, value.minute, value.second,
+                                tzinfo=timezone.utc)
+    else:
+        dt: datetime = datetime(value.year, value.month, value.day,
+                                tzinfo=timezone.utc)
+    return dt.timestamp() * 1000
 
 
 class TransmartCopyWriter(CollectionVisitor):
@@ -113,8 +129,14 @@ class TransmartCopyWriter(CollectionVisitor):
     """
 
     concepts_header = ['concept_cd', 'concept_path', 'name_char']
+    modifiers_header = ['modifier_cd', 'modifier_path', 'name_char']
     studies_header = ['study_num', 'study_id', 'secure_obj_token']
-    dimensions_header = ['id', 'name', 'modifier_code', 'value_type']
+    dimensions_header = ['id',
+                         'name',
+                         'modifier_code',
+                         'value_type',
+                         'dimension_type',
+                         'sort_index']
     study_dimensions_header = ['study_id', 'dimension_description_id']
     trial_visits_header = ['trial_visit_num',
                            'study_num',
@@ -173,6 +195,18 @@ class TransmartCopyWriter(CollectionVisitor):
             row = [concept.concept_code, concept.concept_path, concept.name]
             self.concepts_writer.writerow(row)
             self.concepts.add(concept.concept_code)
+
+    def visit_modifier(self, modifier: Modifier) -> None:
+        """ Serialises a Modifier entity to a TSV file.
+
+        :param modifier: the Modifier entity
+        """
+        if modifier.modifier_code not in self.modifiers:
+            row = [modifier.modifier_code,
+                   modifier.modifier_path,
+                   modifier.name]
+            self.modifiers_writer.writerow(row)
+            self.modifiers.add(modifier.modifier_code)
 
     def write_study_dimensions(self, study_index):
         for dimension_index in self.dimensions.values():
@@ -289,13 +323,10 @@ class TransmartCopyWriter(CollectionVisitor):
         ValueType.Text: 'B'
     }
 
-    def visit_observation(self, observation: Observation) -> None:
-        """ Serialises an Observation entity to a TSV file.
-
-        FIXME: fix date value serialisation
-
-        :param observation: the Observation entity
-        """
+    def write_observation(self,
+                          observation: Observation,
+                          value: Value,
+                          modifier: Modifier = None) -> None:
         trial_visit_id = (observation.trial_visit.study.study_id,
                           observation.trial_visit.rel_time_label)
         visit_index = None
@@ -303,25 +334,22 @@ class TransmartCopyWriter(CollectionVisitor):
             visit_index = self.visits[observation.visit.identifier]
         if visit_index is None:
             visit_index = -1
-        value = observation.value
         text_value = None
         number_value = None
         blob_value = None
-        value_type: ValueType = value.value_type()
+        value_type: ValueType = value.value_type
         if value_type is ValueType.Numeric:
-            number_value = value.value()
+            number_value = value.value
         elif value_type is ValueType.Date:
-            if isinstance(value.value(), datetime):
-                number_value = value.value().timestamp()
-            else:
-                date_value: date = value.value()
-                datetime_value = datetime(
-                    date_value.year, date_value.month, date_value.day)
-                number_value = datetime_value.timestamp()
+            if value.value:
+                if not isinstance(value.value, date):
+                    raise LoaderException(
+                        'Invalid date type: {}'.format(type(value.value)))
+                number_value = microseconds(value.value)
         elif value_type is ValueType.Categorical:
-            text_value = value.value()
+            text_value = value.value
         elif value_type is ValueType.Text:
-            blob_value = value.value()
+            blob_value = value.value
         else:
             raise LoaderException(
                 'Value type not supported: {}'.format(value.value_type))
@@ -330,51 +358,67 @@ class TransmartCopyWriter(CollectionVisitor):
                self.patients[observation.patient.identifier],
                observation.concept.concept_code,
                '@',
-               observation.start_date,
-               observation.end_date,
-               '@',
+               format_date(observation.start_date),
+               format_date(observation.end_date),
+               modifier.modifier_code if modifier else '@',
                self.instance_num,
                self.trial_visits[trial_visit_id],
                TransmartCopyWriter.value_type_codes[value_type],
                text_value,
                number_value,
                blob_value]
-        self.instance_num = self.instance_num + 1
         self.observations_writer.writerow(row)
 
-    def write_dimension(self, dimension: Dimension) -> None:
+    def visit_observation(self, observation: Observation) -> None:
+        """ Serialises an Observation entity to a TSV file.
+
+        :param observation: the Observation entity
+        """
+        self.write_observation(observation, observation.value)
+        if observation.metadata:
+            for modifier, value in observation.metadata.values.items():
+                self.write_observation(observation, value, modifier)
+        self.instance_num = self.instance_num + 1
+
+    def visit_dimension(self, dimension: Dimension) -> None:
         """ Serialises a Dimension entity to a TSV file.
 
         :param dimension: the Dimension entity
         """
         if dimension.name not in self.dimensions:
             value_type = None
-            if dimension.value_type:
+            if dimension.modifier and dimension.modifier.value_type:
                 value_type = TransmartCopyWriter.value_type_codes[
-                    dimension.value_type]
+                    dimension.modifier.value_type]
+            dimension_type: Optional[str] = None
+            if dimension.dimension_type == DimensionType.Subject:
+                dimension_type = 'SUBJECT'
             row = [len(self.dimensions),
                    dimension.name,
-                   dimension.modifier_code,
-                   value_type]
+                   dimension.modifier.modifier_code
+                   if dimension.modifier else None,
+                   value_type,
+                   dimension_type,
+                   dimension.sort_index]
             self.dimensions_writer.writerow(row)
             self.dimensions[dimension.name] = len(self.dimensions)
 
-    def write_dimensions(self) -> None:
+    def write_default_dimensions(self) -> None:
         """ Write dimensions metadata and link all studies to the dimensions
         """
-        dimensions = [
+        default_dimensions = [
             study_dimension,
             concept_dimension,
             patient_dimension,
             start_time_dimension,
             visit_dimension
         ]
-        for dimension in dimensions:
-            self.write_dimension(dimension)
+        for dimension in default_dimensions:
+            self.visit_dimension(dimension)
 
     def write_collection(self, collection: DataCollection) -> None:
         CollectionValidator.validate(collection)
-        self.write_dimensions()
+        self.write_default_dimensions()
         self.visit(collection)
 
     def prepare_output_dir(self) -> None:
@@ -401,6 +445,9 @@ class TransmartCopyWriter(CollectionVisitor):
         self.concepts_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/concept_dimension.tsv')
         self.concepts_writer.writerow(self.concepts_header)
+        self.modifiers_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/modifier_dimension.tsv')
+        self.modifiers_writer.writerow(self.modifiers_header)
         self.studies_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/study.tsv')
         self.studies_writer.writerow(self.studies_header)
@@ -436,6 +483,7 @@ class TransmartCopyWriter(CollectionVisitor):
         self.output_dir = output_dir
         self.prepare_output_dir()
         self.concepts_writer: TsvWriter = None
+        self.modifiers_writer: TsvWriter = None
         self.studies_writer: TsvWriter = None
         self.dimensions_writer: TsvWriter = None
         self.study_dimensions_writer: TsvWriter = None
@@ -449,8 +497,9 @@ class TransmartCopyWriter(CollectionVisitor):
         self.init_writers()
 
         self.concepts: Set[str] = set()
-        self.studies: Dict[str, int] = {}
+        self.modifiers: Set[str] = set()
         self.dimensions: Dict[str, int] = {}
+        self.studies: Dict[str, int] = {}
         self.trial_visits: Dict[Tuple[str, str], int] = {}
         self.patients: Dict[str, int] = {}
         self.visits: Dict[str, int] = {}

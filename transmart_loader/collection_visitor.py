@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Optional
 
-from transmart_loader.transmart import DataCollection, Concept, Patient,\
-    Observation, TreeNode, Visit, TrialVisit, Study
+from transmart_loader.transmart import DataCollection, Concept, Patient, \
+    Observation, TreeNode, Visit, TrialVisit, Study, Modifier, Dimension
 
 
 class CollectionVisitor:
@@ -12,6 +12,14 @@ class CollectionVisitor:
 
     @abstractmethod
     def visit_concept(self, concept: Concept) -> None:
+        pass
+
+    @abstractmethod
+    def visit_modifier(self, modifier: Modifier) -> None:
+        pass
+
+    @abstractmethod
+    def visit_dimension(self, dimension: Dimension) -> None:
         pass
 
     @abstractmethod
@@ -43,6 +51,10 @@ class CollectionVisitor:
             return
         for concept in collection.concepts:
             self.visit_concept(concept)
+        for modifier in collection.modifiers:
+            self.visit_modifier(modifier)
+        for dimension in collection.dimensions:
+            self.visit_dimension(dimension)
         for study in collection.studies:
             self.visit_study(study)
         for trial_visit in collection.trial_visits:

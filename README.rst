@@ -72,13 +72,6 @@ Full documentation of the package is available at `Read the Docs`_.
 .. _Read the Docs: https://transmart-loader.readthedocs.io
 
 
-
-Known issues
-************
-
-- Date values are not correctly translated
-
-
 Development
 *************
 
