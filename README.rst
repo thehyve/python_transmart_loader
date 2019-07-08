@@ -29,7 +29,7 @@ a TranSMART database using the transmart-copy_ tool.
 .. _TranSMART: https://github.com/thehyve/transmart_core
 .. _transmart-copy: https://github.com/thehyve/transmart-core/tree/dev/transmart-copy
 
-⚠️ Note: this is a very preliminary version, still under development.
+⚠️ Note: this is a development version.
 Issues can be reported at https://github.com/thehyve/python_transmart_loader/issues.
 
 
