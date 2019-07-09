@@ -2,7 +2,8 @@ from abc import abstractmethod
 from typing import Optional
 
 from transmart_loader.transmart import DataCollection, Concept, Patient, \
-    Observation, TreeNode, Visit, TrialVisit, Study, Modifier, Dimension
+    Observation, TreeNode, Visit, TrialVisit, Study, Modifier, Dimension, \
+    Relation, RelationType
 
 
 class CollectionVisitor:
@@ -46,6 +47,14 @@ class CollectionVisitor:
     def visit_observation(self, observation: Observation) -> None:
         pass
 
+    @abstractmethod
+    def visit_relation_type(self, relation_type: RelationType) -> None:
+        pass
+
+    @abstractmethod
+    def visit_relation(self, relation: Relation) -> None:
+        pass
+
     def visit(self, collection: Optional[DataCollection]) -> None:
         if collection is None:
             return
@@ -67,3 +76,7 @@ class CollectionVisitor:
             self.visit_node(node)
         for observation in collection.observations:
             self.visit_observation(observation)
+        for relation_type in collection.relation_types:
+            self.visit_relation_type(relation_type)
+        for relation in collection.relations:
+            self.visit_relation(relation)

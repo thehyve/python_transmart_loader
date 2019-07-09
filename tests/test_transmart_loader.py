@@ -13,7 +13,7 @@ from transmart_loader.copy_writer import TransmartCopyWriter
 from transmart_loader.transmart import DataCollection, Concept, Study, \
     TrialVisit, Visit, TreeNode, Patient, Observation, ValueType, StudyNode, \
     ConceptNode, CategoricalValue, Modifier, ObservationMetadata, \
-    TextValue, DateValue, Dimension, DimensionType
+    TextValue, DateValue, Dimension, DimensionType, RelationType, Relation
 
 
 @pytest.fixture
@@ -78,6 +78,36 @@ def simple_collection() -> DataCollection:
     return collection
 
 
+@pytest.fixture
+def collection_with_relations() -> DataCollection:
+    concepts: List[Concept] = [
+        Concept('dummy_code', 'Dummy variable', '\\dummy\\path',
+                ValueType.Categorical)]
+    studies: List[Study] = [Study('test', 'Test study')]
+    trial_visits: List[TrialVisit] = [
+        TrialVisit(studies[0], 'Week 1', 'Week', 1)]
+    patients: List[Patient] = [
+        Patient('SUBJ0', 'male', []),
+        Patient('SUBJ1', 'female', []),
+        Patient('SUBJ2', 'female', [])
+    ]
+    visits: List[Visit] = [
+        Visit(patients[0], 'visit1', None, None, None, None, None, None, [])]
+    top_node = StudyNode(studies[0])
+    top_node.add_child(ConceptNode(concepts[0]))
+    ontology: List[TreeNode] = [top_node]
+    relation_types = [RelationType('parent', None, None, None),
+                      RelationType('sibling', 'Sibling of', True, True)]
+    relations = [
+        Relation(patients[0], relation_types[0], patients[1], None, None),
+        Relation(patients[0], relation_types[0], patients[2], None, None),
+        Relation(patients[1], relation_types[1], patients[2], True, True)]
+    collection = DataCollection(concepts, [], [], studies,
+                                trial_visits, visits, ontology, patients,
+                                [], relation_types, relations)
+    return collection
+
+
 def test_load_empty_collection(tmp_path, empty_collection):
     target_path = tmp_path.as_posix()
     writer = TransmartCopyWriter(target_path)
@@ -114,3 +144,24 @@ def test_load_simple_collection(tmp_path, simple_collection):
         target_path + '/i2b2metadata/study_dimension_descriptions.tsv')
     assert path.exists(target_path + '/i2b2demodata/trial_visit_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/observation_fact.tsv')
+
+
+def test_load_collection_with_relations(tmp_path, collection_with_relations):
+    target_path = tmp_path.as_posix()
+    writer = TransmartCopyWriter(target_path)
+    writer.write_collection(collection_with_relations)
+    assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
+    assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
+    assert path.exists(target_path + '/i2b2demodata/patient_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/encounter_mapping.tsv')
+    assert path.exists(target_path + '/i2b2demodata/visit_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/study.tsv')
+    assert path.exists(target_path + '/i2b2metadata/dimension_description.tsv')
+    assert path.exists(
+        target_path + '/i2b2metadata/study_dimension_descriptions.tsv')
+    assert path.exists(target_path + '/i2b2demodata/trial_visit_dimension.tsv')
+    assert path.exists(target_path + '/i2b2demodata/observation_fact.tsv')
+    assert path.exists(target_path + '/i2b2demodata/relation_types.tsv')
+    assert path.exists(target_path + '/i2b2demodata/relations.tsv')

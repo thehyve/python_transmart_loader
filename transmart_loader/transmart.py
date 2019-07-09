@@ -74,6 +74,39 @@ class Patient:
         self.mappings = mappings
 
 
+class RelationType:
+    """
+    Relation type
+    """
+    def __init__(self,
+                 label: str,
+                 description: Optional[str],
+                 symmetrical: Optional[bool],
+                 biological: Optional[bool]
+                 ):
+        self.label = label
+        self.description = description
+        self.symmetrical = symmetrical
+        self.biological = biological
+
+
+class Relation:
+    """
+    Binary relation between patients
+    """
+    def __init__(self,
+                 left: Patient,
+                 relation_type: RelationType,
+                 right: Patient,
+                 biological: Optional[bool],
+                 share_household: Optional[bool]):
+        self.left = left
+        self.relation_type = relation_type
+        self.right = right
+        self.biological = biological
+        self.share_household = share_household
+
+
 class Visit:
     """
     Patient visit
@@ -291,7 +324,9 @@ class DataCollection:
                  visits: Iterable[Visit],
                  ontology: Iterable[TreeNode],
                  patients: Iterable[Patient],
-                 observations: Iterable[Observation]):
+                 observations: Iterable[Observation],
+                 relation_types: Iterable[RelationType] = [],
+                 relations: Iterable[Relation] = []):
         self.concepts = concepts
         self.modifiers = modifiers
         self.dimensions = dimensions
@@ -301,3 +336,5 @@ class DataCollection:
         self.ontology = ontology
         self.patients = patients
         self.observations = observations
+        self.relation_types = relation_types
+        self.relations = relations

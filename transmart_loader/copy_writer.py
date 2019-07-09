@@ -1,5 +1,4 @@
 import os
-from time import mktime
 from datetime import date, datetime, timezone
 from enum import Enum
 from os import path
@@ -11,7 +10,8 @@ from transmart_loader.console import Console
 from transmart_loader.loader_exception import LoaderException
 from transmart_loader.transmart import DataCollection, Concept, Observation, \
     Patient, TreeNode, Visit, TrialVisit, Study, ValueType, StudyNode, \
-    ConceptNode, Dimension, Modifier, Value, DimensionType
+    ConceptNode, Dimension, Modifier, Value, DimensionType, \
+    Relation, RelationType
 from transmart_loader.tsv_writer import TsvWriter
 
 
@@ -123,6 +123,12 @@ def microseconds(value: date) -> float:
     return dt.timestamp() * 1000
 
 
+def format_bool(value: Optional[bool]) -> Optional[str]:
+    if value is None:
+        return None
+    return 't' if value else 'f'
+
+
 class TransmartCopyWriter(CollectionVisitor):
     """ Writes TranSMART data collections to a folder with files
     that can be loaded into a TranSMART database using transmart-copy.
@@ -185,6 +191,16 @@ class TransmartCopyWriter(CollectionVisitor):
                            'tval_char',
                            'nval_num',
                            'observation_blob']
+    relation_types_header = ['id',
+                             'label',
+                             'description',
+                             'symmetrical',
+                             'biological']
+    relations_header = ['left_subject_id',
+                        'relation_type_id',
+                        'right_subject_id',
+                        'biological',
+                        'share_household']
 
     def visit_concept(self, concept: Concept) -> None:
         """ Serialises a Concept entity to a TSV file.
@@ -380,6 +396,33 @@ class TransmartCopyWriter(CollectionVisitor):
                 self.write_observation(observation, value, modifier)
         self.instance_num = self.instance_num + 1
 
+    def visit_relation_type(self, relation_type: RelationType) -> None:
+        """ Serialises a relation type to a TSV file.
+
+        :param relation_type: the relation type
+        """
+        if relation_type.label not in self.relation_types:
+            relation_type_index = len(self.relation_types)
+            row = [relation_type_index,
+                   relation_type.label,
+                   relation_type.description,
+                   format_bool(relation_type.symmetrical),
+                   format_bool(relation_type.biological)]
+            self.relation_types_writer.writerow(row)
+            self.relation_types[relation_type.label] = relation_type_index
+
+    def visit_relation(self, relation: Relation) -> None:
+        """ Serialises a Relation entity to a TSV file.
+
+        :param relation: the Relation entity
+        """
+        row = [self.patients[relation.left.identifier],
+               self.relation_types[relation.relation_type.label],
+               self.patients[relation.right.identifier],
+               format_bool(relation.biological),
+               format_bool(relation.share_household)]
+        self.relations_writer.writerow(row)
+
     def visit_dimension(self, dimension: Dimension) -> None:
         """ Serialises a Dimension entity to a TSV file.
 
@@ -478,6 +521,12 @@ class TransmartCopyWriter(CollectionVisitor):
         self.observations_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/observation_fact.tsv')
         self.observations_writer.writerow(self.observations_header)
+        self.relation_types_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/relation_types.tsv')
+        self.relation_types_writer.writerow(self.relation_types_header)
+        self.relations_writer = TsvWriter(
+            self.output_dir + '/i2b2demodata/relations.tsv')
+        self.relations_writer.writerow(self.relations_header)
 
     def __init__(self, output_dir: str):
         self.output_dir = output_dir
@@ -494,6 +543,8 @@ class TransmartCopyWriter(CollectionVisitor):
         self.visits_writer: TsvWriter = None
         self.tree_nodes_writer: TsvWriter = None
         self.observations_writer: TsvWriter = None
+        self.relation_types_writer: TsvWriter = None
+        self.relations_writer: TsvWriter = None
         self.init_writers()
 
         self.concepts: Set[str] = set()
@@ -502,6 +553,7 @@ class TransmartCopyWriter(CollectionVisitor):
         self.studies: Dict[str, int] = {}
         self.trial_visits: Dict[Tuple[str, str], int] = {}
         self.patients: Dict[str, int] = {}
+        self.relation_types: Dict[str, int] = {}
         self.visits: Dict[str, int] = {}
         self.paths: Set[str] = set()
 
