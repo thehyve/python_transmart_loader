@@ -9,6 +9,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 ************
 
 
+[1.1.0]
+************
+
+Added
+-----
+
+* Support for loading relations and relation types
+
+
 [1.0.0]
 ************
 
