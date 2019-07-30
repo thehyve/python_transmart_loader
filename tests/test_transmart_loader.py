@@ -13,7 +13,8 @@ from transmart_loader.copy_writer import TransmartCopyWriter
 from transmart_loader.transmart import DataCollection, Concept, Study, \
     TrialVisit, Visit, TreeNode, Patient, Observation, ValueType, StudyNode, \
     ConceptNode, CategoricalValue, Modifier, ObservationMetadata, \
-    TextValue, DateValue, Dimension, DimensionType, RelationType, Relation
+    TextValue, DateValue, Dimension, DimensionType, RelationType, Relation, \
+    TreeNodeMetadata
 
 
 @pytest.fixture
@@ -55,6 +56,8 @@ def simple_collection() -> DataCollection:
     visits: List[Visit] = [
         Visit(patients[0], 'visit1', None, None, None, None, None, None, [])]
     top_node = StudyNode(studies[0])
+    top_node.metadata = TreeNodeMetadata(
+        {'Upload date': TextValue('2019-07-01')})
     top_node.add_child(ConceptNode(concepts[0]))
     top_node.add_child(ConceptNode(concepts[1]))
     ontology: List[TreeNode] = [top_node]
@@ -113,6 +116,7 @@ def test_load_empty_collection(tmp_path, empty_collection):
     writer = TransmartCopyWriter(target_path)
     writer.write_collection(empty_collection)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
+    assert path.exists(target_path + '/i2b2metadata/i2b2_tags.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
@@ -132,6 +136,7 @@ def test_load_simple_collection(tmp_path, simple_collection):
     writer = TransmartCopyWriter(target_path)
     writer.write_collection(simple_collection)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
+    assert path.exists(target_path + '/i2b2metadata/i2b2_tags.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')
@@ -151,6 +156,7 @@ def test_load_collection_with_relations(tmp_path, collection_with_relations):
     writer = TransmartCopyWriter(target_path)
     writer.write_collection(collection_with_relations)
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
+    assert path.exists(target_path + '/i2b2metadata/i2b2_tags.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/patient_mapping.tsv')

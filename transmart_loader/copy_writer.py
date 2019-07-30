@@ -11,7 +11,7 @@ from transmart_loader.loader_exception import LoaderException
 from transmart_loader.transmart import DataCollection, Concept, Observation, \
     Patient, TreeNode, Visit, TrialVisit, Study, ValueType, StudyNode, \
     ConceptNode, Dimension, Modifier, Value, DimensionType, \
-    Relation, RelationType
+    Relation, RelationType, TreeNodeMetadata
 from transmart_loader.tsv_writer import TsvWriter
 
 
@@ -27,6 +27,14 @@ class VisualAttribute(Enum):
     Text = 6
     Date = 7
     Categorical = 8
+
+
+class TagKey:
+    def __init__(self,
+                 node_path: str,
+                 tag_type: str):
+        self.node_path = node_path
+        self.tag_type = tag_type
 
 
 ValueTypeToVisualAttribute = {
@@ -79,6 +87,18 @@ def get_concept_node_row(node: ConceptNode, level, node_path):
            'LIKE',
            node.concept.concept_path,
            'PUBLIC']
+    return row
+
+
+def get_tree_node_tag_row(tag_id: int,
+                          node_path: str,
+                          tag: str,
+                          tag_type: str):
+    row = [tag_id,
+           node_path,
+           tag,
+           tag_type,
+           1]
     return row
 
 
@@ -136,7 +156,10 @@ class TransmartCopyWriter(CollectionVisitor):
 
     concepts_header = ['concept_cd', 'concept_path', 'name_char']
     modifiers_header = ['modifier_cd', 'modifier_path', 'name_char']
-    studies_header = ['study_num', 'study_id', 'secure_obj_token']
+    studies_header = ['study_num',
+                      'study_id',
+                      'secure_obj_token',
+                      'study_blob']
     dimensions_header = ['id',
                          'name',
                          'modifier_code',
@@ -178,6 +201,12 @@ class TransmartCopyWriter(CollectionVisitor):
                          'c_operator',
                          'c_dimcode',
                          'secure_obj_token']
+    tree_node_tags_header = ['tag_id',
+                             'path',
+                             'tag',
+                             'tag_type',
+                             'tags_idx',
+                             'tag_option_id']
     observations_header = ['encounter_num',
                            'patient_num',
                            'concept_cd',
@@ -236,7 +265,7 @@ class TransmartCopyWriter(CollectionVisitor):
         """
         if study.study_id not in self.studies:
             study_index = len(self.studies)
-            row = [study_index, study.study_id, 'PUBLIC']
+            row = [study_index, study.study_id, 'PUBLIC', study.metadata]
             self.studies_writer.writerow(row)
             self.studies[study.study_id] = study_index
             self.write_study_dimensions(study_index)
@@ -285,6 +314,15 @@ class TransmartCopyWriter(CollectionVisitor):
             self.encounter_mappings_writer.writerows(encounter_mapping_rows)
             self.visits[visit.identifier] = encounter_num
 
+    def write_tree_node_tags(self, metadata: TreeNodeMetadata, node_path: str):
+        for tag_type, tag in metadata.values.items():
+            tag_key = TagKey(node_path, tag_type)
+            if tag_key not in self.tags:
+                tag_id = len(self.tags)
+                row = get_tree_node_tag_row(tag_id, node_path, tag, tag_type)
+                self.tree_node_tags_writer.writerow(row)
+                self.tags.add(TagKey(node_path, tag_type))
+
     def visit_tree_node(self, node: TreeNode, level=0, parent_path='\\'):
         """ Serialises a TreeNode entity and its children to a TSV file.
 
@@ -293,6 +331,10 @@ class TransmartCopyWriter(CollectionVisitor):
         :param parent_path: the path of the parent node.
         """
         node_path = parent_path + node.name + '\\'
+
+        if node.metadata:
+            self.write_tree_node_tags(node.metadata, node_path)
+
         if isinstance(node, StudyNode):
             row = get_study_node_row(node, level, node_path)
         elif isinstance(node, ConceptNode):
@@ -518,6 +560,9 @@ class TransmartCopyWriter(CollectionVisitor):
         self.tree_nodes_writer = TsvWriter(
             self.output_dir + '/i2b2metadata/i2b2_secure.tsv')
         self.tree_nodes_writer.writerow(self.tree_nodes_header)
+        self.tree_node_tags_writer = TsvWriter(
+            self.output_dir + '/i2b2metadata/i2b2_tags.tsv')
+        self.tree_node_tags_writer.writerow(self.tree_node_tags_header)
         self.observations_writer = TsvWriter(
             self.output_dir + '/i2b2demodata/observation_fact.tsv')
         self.observations_writer.writerow(self.observations_header)
@@ -542,6 +587,7 @@ class TransmartCopyWriter(CollectionVisitor):
         self.encounter_mappings_writer: TsvWriter = None
         self.visits_writer: TsvWriter = None
         self.tree_nodes_writer: TsvWriter = None
+        self.tree_node_tags_writer: TsvWriter = None
         self.observations_writer: TsvWriter = None
         self.relation_types_writer: TsvWriter = None
         self.relations_writer: TsvWriter = None
@@ -556,5 +602,6 @@ class TransmartCopyWriter(CollectionVisitor):
         self.relation_types: Dict[str, int] = {}
         self.visits: Dict[str, int] = {}
         self.paths: Set[str] = set()
+        self.tags: Set[TagKey] = set()
 
         self.instance_num = 0

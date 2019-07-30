@@ -14,6 +14,85 @@ class ValueType(Enum):
     Date = 4
 
 
+class Value:
+    """
+    An observed value
+    """
+    @property
+    @abstractmethod
+    def value_type(self) -> ValueType:
+        pass
+
+    @property
+    @abstractmethod
+    def value(self) -> Any:
+        pass
+
+
+class NumericalValue(Value):
+    """
+    A numerical value
+    """
+    def __init__(self, value: Optional[float]):
+        self._value = value
+
+    @property
+    def value_type(self):
+        return ValueType.Numeric
+
+    @property
+    def value(self):
+        return self._value
+
+
+class DateValue(Value):
+    """
+    A date value
+    """
+    def __init__(self, value: Optional[date]):
+        self._value = value
+
+    @property
+    def value_type(self):
+        return ValueType.Date
+
+    @property
+    def value(self):
+        return self._value
+
+
+class CategoricalValue(Value):
+    """
+    A categorical value
+    """
+    def __init__(self, value: Optional[str]):
+        self._value = value
+
+    @property
+    def value_type(self):
+        return ValueType.Categorical
+
+    @property
+    def value(self):
+        return self._value
+
+
+class TextValue(Value):
+    """
+    A text value
+    """
+    def __init__(self, value: Optional[str]):
+        self._value = value
+
+    @property
+    def value_type(self):
+        return ValueType.Text
+
+    @property
+    def value(self):
+        return self._value
+
+
 class DimensionType(Enum):
     """
     Type of a dimension
@@ -131,13 +210,25 @@ class Visit:
         self.mappings = mappings
 
 
+class StudyMetadata:
+    """
+    Metadata about a study
+    """
+    def __init__(self, values: Dict[str, Value]):
+        self.values = values
+
+
 class Study:
     """
     Study
     """
-    def __init__(self, study_id: str, name: str):
+    def __init__(self,
+                 study_id: str,
+                 name: str,
+                 metadata: Optional[StudyMetadata] = None):
         self.study_id = study_id
         self.name = name
+        self.metadata = metadata
 
 
 class Dimension:
@@ -168,85 +259,6 @@ class TrialVisit:
         self.rel_time_unit = rel_time_unit
         self.rel_time = rel_time
         self.rel_time_label = rel_time_label
-
-
-class Value:
-    """
-    An observed value
-    """
-    @property
-    @abstractmethod
-    def value_type(self) -> ValueType:
-        pass
-
-    @property
-    @abstractmethod
-    def value(self) -> Any:
-        pass
-
-
-class NumericalValue(Value):
-    """
-    A numerical value
-    """
-    def __init__(self, value: Optional[float]):
-        self._value = value
-
-    @property
-    def value_type(self):
-        return ValueType.Numeric
-
-    @property
-    def value(self):
-        return self._value
-
-
-class DateValue(Value):
-    """
-    A date value
-    """
-    def __init__(self, value: Optional[date]):
-        self._value = value
-
-    @property
-    def value_type(self):
-        return ValueType.Date
-
-    @property
-    def value(self):
-        return self._value
-
-
-class CategoricalValue(Value):
-    """
-    A categorical value
-    """
-    def __init__(self, value: Optional[str]):
-        self._value = value
-
-    @property
-    def value_type(self):
-        return ValueType.Categorical
-
-    @property
-    def value(self):
-        return self._value
-
-
-class TextValue(Value):
-    """
-    A text value
-    """
-    def __init__(self, value: Optional[str]):
-        self._value = value
-
-    @property
-    def value_type(self):
-        return ValueType.Text
-
-    @property
-    def value(self):
-        return self._value
 
 
 class ObservationMetadata:
@@ -280,14 +292,23 @@ class Observation:
         self.metadata = metadata
 
 
+class TreeNodeMetadata:
+    """
+    Metadata tags
+    """
+    def __init__(self, values: Dict[str, Value]):
+        self.values = values
+
+
 class TreeNode:
     """
     Ontology node
     """
-    def __init__(self, name: str):
+    def __init__(self, name: str, metadata: Optional[TreeNodeMetadata] = None):
         self.parent: Optional['TreeNode'] = None
         self.name = name
-        self.children: List[TreeNode] = []
+        self.metadata = metadata
+        self.children: Sequence['TreeNode'] = []
 
     def add_child(self, child: 'TreeNode'):
         self.children.append(child)
