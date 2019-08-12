@@ -8,6 +8,14 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+[1.2.0]
+************
+
+Added
+-----
+
+* Support for loading study metadata and tree node tags
+
 
 [1.1.0]
 ************
