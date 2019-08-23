@@ -4,13 +4,20 @@ from transmart_loader.collection_visitor import CollectionVisitor
 from transmart_loader.console import Console
 from transmart_loader.loader_exception import LoaderException
 from transmart_loader.transmart import TreeNode, DataCollection, Observation, \
-    Patient, Visit, TrialVisit, Study, Concept, Modifier, Dimension
+    Patient, Visit, TrialVisit, Study, Concept, Modifier, Dimension, \
+    RelationType, Relation
 
 
 class CollectionValidator(CollectionVisitor):
     """
     Validation class for TranSMART data collections.
     """
+
+    def visit_relation(self, relation: Relation) -> None:
+        pass
+
+    def visit_relation_type(self, relation_type: RelationType) -> None:
+        pass
 
     def visit_concept(self, concept: Concept) -> None:
         pass
