@@ -8,6 +8,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+[1.2.1]
+************
+
+Changed
+-------
+
+* Fix writing of tree node tags
+
+
 [1.2.0]
 ************
 
