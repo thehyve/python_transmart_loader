@@ -205,8 +205,7 @@ class TransmartCopyWriter(CollectionVisitor):
                              'path',
                              'tag',
                              'tag_type',
-                             'tags_idx',
-                             'tag_option_id']
+                             'tags_idx']
     observations_header = ['encounter_num',
                            'patient_num',
                            'concept_cd',
