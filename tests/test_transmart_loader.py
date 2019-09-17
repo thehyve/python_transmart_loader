@@ -49,7 +49,10 @@ def simple_collection() -> DataCollection:
     dimensions: List[Dimension] = [
         Dimension('sample', modifiers[1], DimensionType.Subject, 1)
     ]
-    studies: List[Study] = [Study('test', 'Test study')]
+    study_metadata = {'conceptCodeToVariableMetadata': {
+        'test_concept': {'name': 'variable_1'}
+    }}
+    studies: List[Study] = [Study('test', 'Test study', study_metadata)]
     trial_visits: List[TrialVisit] = [
         TrialVisit(studies[0], 'Week 1', 'Week', 1)]
     patients: List[Patient] = [Patient('SUBJ0', 'male', [])]

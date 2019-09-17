@@ -214,8 +214,10 @@ class StudyMetadata:
     """
     Metadata about a study
     """
-    def __init__(self, values: Dict[str, Value]):
-        self.values = values
+    def __init__(self, concept_code_to_variable_metadata: Dict[str, Any]):
+        self.value: Dict[str, Dict[str, Any]] = dict()
+        self.value = {
+            'conceptCodeToVariableMetadata': concept_code_to_variable_metadata}
 
 
 class Study:
@@ -225,10 +227,13 @@ class Study:
     def __init__(self,
                  study_id: str,
                  name: str,
-                 metadata: Optional[StudyMetadata] = None):
+                 metadata: Optional[Dict[str, Dict[str, Any]]] = None):
         self.study_id = study_id
         self.name = name
-        self.metadata = metadata
+        self.metadata = None
+        if metadata and metadata.get('conceptCodeToVariableMetadata'):
+            self.metadata = StudyMetadata(
+                metadata.get('conceptCodeToVariableMetadata'))
 
 
 class Dimension:
