@@ -8,6 +8,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+[1.3.0]
+************
+
+Changed
+-------
+
+* Fix writing of study metadata
+
+
 [1.2.1]
 ************
 
