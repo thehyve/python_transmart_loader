@@ -8,6 +8,16 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+
+[1.3.1]
+************
+
+Changed
+-------
+
+* Fix tree node metadata type
+
+
 [1.3.0]
 ************
 
