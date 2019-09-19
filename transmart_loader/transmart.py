@@ -329,7 +329,7 @@ class TreeNodeMetadata:
     """
     Metadata tags
     """
-    def __init__(self, values: Dict[str, Value]):
+    def __init__(self, values: Dict[str, str]):
         self.values = values
 
 
