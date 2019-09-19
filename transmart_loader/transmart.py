@@ -1,7 +1,9 @@
 from abc import abstractmethod
 from datetime import date
 from enum import Enum
-from typing import Any, Sequence, List, Iterable, Optional, Dict
+from typing import Any, Sequence, Iterable, Optional, Dict, List
+
+from pydantic import BaseModel, Schema
 
 
 class ValueType(Enum):
@@ -210,14 +212,43 @@ class Visit:
         self.mappings = mappings
 
 
-class StudyMetadata:
+class VariableDataType(str, Enum):
+    Numeric = 'NUMERIC'
+    Date = 'DATE'
+    DateTime = 'DATETIME'
+    String = 'STRING'
+
+
+class Measure(str, Enum):
+    Nominal = 'NOMINAL'
+    Ordinal = 'ORDINAL'
+    Scale = 'SCALE'
+
+
+class MissingValues(BaseModel):
+    lower: Optional[float]
+    upper: Optional[float]
+    values: Optional[List[Any]]
+    value: Optional[Any]
+
+
+class VariableMetadata(BaseModel):
+    type: VariableDataType
+    name: Optional[str]
+    measure: Optional[Measure]
+    description: Optional[str]
+    width: Optional[int]
+    decimals: Optional[int]
+    columns: Optional[int]
+    valueLabels: Optional[Dict[float, str]]
+    missingValues: Optional[MissingValues]
+
+
+class StudyMetadata(BaseModel):
     """
     Metadata about a study
     """
-    def __init__(self, concept_code_to_variable_metadata: Dict[str, Any]):
-        self.value: Dict[str, Dict[str, Any]] = dict()
-        self.value = {
-            'conceptCodeToVariableMetadata': concept_code_to_variable_metadata}
+    conceptCodeToVariableMetadata: Optional[Dict[str, VariableMetadata]]
 
 
 class Study:
@@ -227,13 +258,10 @@ class Study:
     def __init__(self,
                  study_id: str,
                  name: str,
-                 metadata: Optional[Dict[str, Dict[str, Any]]] = None):
+                 metadata: StudyMetadata = None):
         self.study_id = study_id
         self.name = name
-        self.metadata = None
-        if metadata and metadata.get('conceptCodeToVariableMetadata'):
-            self.metadata = StudyMetadata(
-                metadata.get('conceptCodeToVariableMetadata'))
+        self.metadata = metadata
 
 
 class Dimension:

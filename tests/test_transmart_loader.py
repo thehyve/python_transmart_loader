@@ -14,7 +14,7 @@ from transmart_loader.transmart import DataCollection, Concept, Study, \
     TrialVisit, Visit, TreeNode, Patient, Observation, ValueType, StudyNode, \
     ConceptNode, CategoricalValue, Modifier, ObservationMetadata, \
     TextValue, DateValue, Dimension, DimensionType, RelationType, Relation, \
-    TreeNodeMetadata
+    TreeNodeMetadata, StudyMetadata
 
 
 @pytest.fixture
@@ -49,9 +49,12 @@ def simple_collection() -> DataCollection:
     dimensions: List[Dimension] = [
         Dimension('sample', modifiers[1], DimensionType.Subject, 1)
     ]
-    study_metadata = {'conceptCodeToVariableMetadata': {
-        'test_concept': {'name': 'variable_1'}
-    }}
+    study_metadata = StudyMetadata(**{'conceptCodeToVariableMetadata': {
+        'test_concept': {
+            'name': 'variable_1',
+            'type': 'DATETIME'
+        }
+    }})
     studies: List[Study] = [Study('test', 'Test study', study_metadata)]
     trial_visits: List[TrialVisit] = [
         TrialVisit(studies[0], 'Week 1', 'Week', 1)]

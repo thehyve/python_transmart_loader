@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import date, datetime, timezone
 from enum import Enum
@@ -266,7 +265,7 @@ class TransmartCopyWriter(CollectionVisitor):
         """
         if study.study_id not in self.studies:
             study_index = len(self.studies)
-            metadata_json = json.dumps(study.metadata.value) \
+            metadata_json = study.metadata.json() \
                 if study.metadata else None
             row = [study_index, study.study_id, 'PUBLIC', metadata_json]
             self.studies_writer.writerow(row)
