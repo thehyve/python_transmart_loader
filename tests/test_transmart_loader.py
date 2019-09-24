@@ -63,7 +63,7 @@ def simple_collection() -> DataCollection:
         Visit(patients[0], 'visit1', None, None, None, None, None, None, [])]
     top_node = StudyNode(studies[0])
     top_node.metadata = TreeNodeMetadata(
-        {'Upload date': TextValue('2019-07-01')})
+        {'Upload date': '2019-07-01'})
     top_node.add_child(ConceptNode(concepts[0]))
     top_node.add_child(ConceptNode(concepts[1]))
     ontology: List[TreeNode] = [top_node]
