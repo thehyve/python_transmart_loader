@@ -577,21 +577,21 @@ class TransmartCopyWriter(CollectionVisitor):
     def __init__(self, output_dir: str):
         self.output_dir = output_dir
         self.prepare_output_dir()
-        self.concepts_writer: TsvWriter = None
-        self.modifiers_writer: TsvWriter = None
-        self.studies_writer: TsvWriter = None
-        self.dimensions_writer: TsvWriter = None
-        self.study_dimensions_writer: TsvWriter = None
-        self.trial_visits_writer: TsvWriter = None
-        self.patient_mappings_writer: TsvWriter = None
-        self.patients_writer: TsvWriter = None
-        self.encounter_mappings_writer: TsvWriter = None
-        self.visits_writer: TsvWriter = None
-        self.tree_nodes_writer: TsvWriter = None
-        self.tree_node_tags_writer: TsvWriter = None
-        self.observations_writer: TsvWriter = None
-        self.relation_types_writer: TsvWriter = None
-        self.relations_writer: TsvWriter = None
+        self.concepts_writer: Optional[TsvWriter] = None
+        self.modifiers_writer: Optional[TsvWriter] = None
+        self.studies_writer: Optional[TsvWriter] = None
+        self.dimensions_writer: Optional[TsvWriter] = None
+        self.study_dimensions_writer: Optional[TsvWriter] = None
+        self.trial_visits_writer: Optional[TsvWriter] = None
+        self.patient_mappings_writer: Optional[TsvWriter] = None
+        self.patients_writer: Optional[TsvWriter] = None
+        self.encounter_mappings_writer: Optional[TsvWriter] = None
+        self.visits_writer: Optional[TsvWriter] = None
+        self.tree_nodes_writer: Optional[TsvWriter] = None
+        self.tree_node_tags_writer: Optional[TsvWriter] = None
+        self.observations_writer: Optional[TsvWriter] = None
+        self.relation_types_writer: Optional[TsvWriter] = None
+        self.relations_writer: Optional[TsvWriter] = None
         self.init_writers()
 
         self.concepts: Set[str] = set()

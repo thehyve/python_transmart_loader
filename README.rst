@@ -54,11 +54,66 @@ or from sources:
 Usage
 ------
 
+Define a TranSMART data collection, using the classes in `transmart_loader/transmart.py`_, e.g.,
+
+.. _`transmart_loader/transmart.py`: https://github.com/thehyve/python_transmart_loader/blob/master/transmart_loader/transmart.py
+
+.. code-block:: python
+
+  # Create the dimension elements
+  age_concept = Concept('test:age', 'Age', '\\Test\\age', ValueType.Numeric)
+  concepts = [age_concept]
+  studies = [Study('test', 'Test study')]
+  trial_visits = [TrialVisit(studies[0], 'Week 1', 'Week', 1)]
+  patients = [Patient('SUBJ0', 'male', [])]
+  visits = [Visit(patients[0], 'visit1', None, None, None, None, None, None, [])]
+  # Create the observations
+  observations = [
+      Observation(patients[0], age_concept, visits[0], trial_visits[0],
+                  date(2019, 3, 28), None, NumericalValue(28))]
+
+Create a hierarchical ontology for the concepts, e.g., to create the following structure:
+
+::
+  
+  └ Ontology
+    └ Age
+
+
+.. code-block:: python
+
+  # Create an ontology with one top node and a concept node
+  top_node = TreeNode('Ontology')
+  top_node.add_child(ConceptNode(concepts[0]))
+  ontology = [top_node]
+
+Write the data collection to a format that can be loaded using ``transmart-copy``:
+
+.. code-block:: python
+
+  collection = DataCollection(concepts, [], [], studies,
+                              trial_visits, visits, ontology, patients, observations)
+  
+  # Write collection to a temporary directory
+  # The generated files can be loaded into TranSMART with transmart-copy.
+  output_dir = mkdtemp()
+  copy_writer = TransmartCopyWriter(output_dir)
+  copy_writer.write_collection(collection)
+
+
+Check `examples/data_collection.py`_ for a complete example.
+
+.. _`examples/data_collection.py`: https://github.com/thehyve/python_transmart_loader/blob/master/examples/data_collection.py
+
 Usage examples can be found in these projects: 
 
 - `fhir2transmart <https://github.com/thehyve/python_fhir2transmart>`_: a tool that translates core `HL7 FHIR`_ resources to the TranSMART data model.  
 - `ontology2transmart <https://github.com/thehyve/python_ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
   to TranSMART ontologies.
+- `csr2transmart <https://github.com/thehyve/python_csr2transmart>`_: a custom data transformation
+  and loading pipeline for a Dutch center for pediatric oncology.
+- `transmart-hyper-dicer <https://github.com/thehyve/transmart-hyper-dicer>`_: a tool that reads a selection of data from a TranSMART instance using its REST API
+  and loads it into another TranSMART instance.
 
 .. _`HL7 FHIR`: http://hl7.org/fhir/
 .. _DIMDI: https://www.dimdi.de
@@ -80,9 +135,7 @@ For a quick reference on software development, we refer to `the software guide c
 Python versions
 ---------------
 
-This repository is set up with Python version 3.6
-
-Add or remove Python versions based on project requirements. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html>`_ contains more information about Python versions and writing Python 2 and 3 compatible code.
+This packages is tested with Python versions 3.6 and 3.7.
 
 Package management and dependencies
 -----------------------------------
