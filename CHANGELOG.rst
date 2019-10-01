@@ -9,6 +9,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 ************
 
 
+[1.3.2]
+************
+
+Changed
+-------
+
+* Documentation updated
+
+
 [1.3.1]
 ************
 
