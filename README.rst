@@ -108,7 +108,7 @@ Check `examples/data_collection.py`_ for a complete example.
 Usage examples can be found in these projects: 
 
 - `fhir2transmart <https://github.com/thehyve/python_fhir2transmart>`_: a tool that translates core `HL7 FHIR`_ resources to the TranSMART data model.  
-- `ontology2transmart <https://github.com/thehyve/python_ontology2transmart>`_: a tool that translates ontologies available from DIMDI_
+- `claml2transmart <https://github.com/thehyve/python_claml2transmart>`_: a tool that translates ontologies in ClaML_ format (e.g., ICD-10, available from DIMDI_)
   to TranSMART ontologies.
 - `csr2transmart <https://github.com/thehyve/python_csr2transmart>`_: a custom data transformation
   and loading pipeline for a Dutch center for pediatric oncology.
@@ -117,6 +117,7 @@ Usage examples can be found in these projects:
 
 .. _`HL7 FHIR`: http://hl7.org/fhir/
 .. _DIMDI: https://www.dimdi.de
+.. _ClaML: https://www.iso.org/standard/69318.html
 
 
 Documentation
