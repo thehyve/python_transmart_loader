@@ -9,6 +9,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 ************
 
 
+[1.3.3]
+************
+
+Changed
+-------
+
+* Fixed study node serialisation
+
+
 [1.3.2]
 ************
 
