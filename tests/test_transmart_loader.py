@@ -3,6 +3,7 @@
 
 """Tests for the transmart_loader module.
 """
+import csv
 from datetime import date, datetime
 from os import path
 from typing import List
@@ -40,7 +41,9 @@ def simple_collection() -> DataCollection:
         Concept('dummy_code', 'Dummy variable', '\\dummy\\path',
                 ValueType.Categorical),
         Concept('diagnosis_date', 'Diagnosis date', '\\diagnosis_date',
-                ValueType.Date)]
+                ValueType.Date),
+        Concept('extra_c1', 'Extra c1', '\\c1', ValueType.Categorical),
+        Concept('extra_c2', 'Extra c2', '\\c1', ValueType.Categorical)]
     modifiers: List[Modifier] = [
         Modifier('missing_value', 'Missing value', '\\missing_value',
                  ValueType.Text),
@@ -66,7 +69,13 @@ def simple_collection() -> DataCollection:
         {'Upload date': '2019-07-01'})
     top_node.add_child(ConceptNode(concepts[0]))
     top_node.add_child(ConceptNode(concepts[1]))
-    ontology: List[TreeNode] = [top_node]
+
+    node2 = TreeNode('Extra node')
+    node2.add_child((ConceptNode(concepts[2])))
+    node3 = TreeNode('Extra node')
+    node3.add_child(ConceptNode(concepts[3]))
+
+    ontology: List[TreeNode] = [top_node, node2, node3]
     observations: List[Observation] = [
         Observation(patients[0], concepts[0], visits[0], trial_visits[0],
                     date(2019, 3, 28), None, CategoricalValue('value')),
@@ -117,6 +126,15 @@ def collection_with_relations() -> DataCollection:
     return collection
 
 
+def get_column_values(file_path: str, column_name: str) -> List[str]:
+    rows = []
+    with open(file_path) as file:
+        reader = csv.DictReader(file, delimiter="\t")
+        for row in reader:
+            rows.append(row[column_name])
+    return rows
+
+
 def test_load_empty_collection(tmp_path, empty_collection):
     target_path = tmp_path.as_posix()
     writer = TransmartCopyWriter(target_path)
@@ -141,7 +159,14 @@ def test_load_simple_collection(tmp_path, simple_collection):
     target_path = tmp_path.as_posix()
     writer = TransmartCopyWriter(target_path)
     writer.write_collection(simple_collection)
+    del writer
+
     assert path.exists(target_path + '/i2b2metadata/i2b2_secure.tsv')
+    tree_node_paths = get_column_values(target_path + '/i2b2metadata/i2b2_secure.tsv', 'c_fullname')
+    assert len(tree_node_paths) == 6
+    assert all(elem in tree_node_paths for elem in [
+        '\\Test study\\', '\\Test study\\Dummy variable\\', '\\Test study\\Diagnosis date\\',
+        '\\Extra node\\', '\\Extra node\\Extra c1\\', '\\Extra node\\Extra c2\\'])
     assert path.exists(target_path + '/i2b2metadata/i2b2_tags.tsv')
     assert path.exists(target_path + '/i2b2demodata/concept_dimension.tsv')
     assert path.exists(target_path + '/i2b2demodata/modifier_dimension.tsv')
