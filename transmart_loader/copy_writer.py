@@ -350,8 +350,8 @@ class TransmartCopyWriter(CollectionVisitor):
                 Console.warning("Path too long: " + node_path)
             self.tree_nodes_writer.writerow(row)
             self.paths.add(node_path)
-            for child in node.children:
-                self.visit_tree_node(child, level + 1, node_path)
+        for child in node.children:
+            self.visit_tree_node(child, level + 1, node_path)
 
     def visit_node(self, node: TreeNode) -> None:
         self.visit_tree_node(node)
