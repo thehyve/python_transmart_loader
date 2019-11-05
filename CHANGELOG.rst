@@ -8,6 +8,14 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+[1.3.4]
+************
+
+Changed
+-------
+
+* Fix writing of tree nodes if parent node already exists
+
 
 [1.3.3]
 ************
