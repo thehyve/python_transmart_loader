@@ -185,4 +185,7 @@ The TranSMART loader is licensed under the MIT License. See the file `<LICENSE>`
 Credits
 *******
 
+This project was funded by the German Ministry of Education and Research (BMBF) as part of the project
+DIFUTURE - Data Integration for Future Medicine within the German Medical Informatics Initiative (grant no. 01ZZ1804D).
+
 This package was created with `Cookiecutter <https://github.com/audreyr/cookiecutter>`_ and the `NLeSC/python-template <https://github.com/NLeSC/python-template>`_.
