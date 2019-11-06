@@ -8,6 +8,16 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+
+[1.3.5]
+************
+
+Changed
+-------
+
+* Updated the pydantic requirement to include the 1.0 version.
+
+
 [1.3.4]
 ************
 
