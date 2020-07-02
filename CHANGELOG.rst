@@ -9,6 +9,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 ************
 
 
+[1.3.6]
+************
+
+Changed
+-------
+
+* Updated the pydantic requirement to include the 1.5 version.
+
+
 [1.3.5]
 ************
 
