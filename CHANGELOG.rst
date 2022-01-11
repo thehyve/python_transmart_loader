@@ -8,6 +8,16 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+[1.4.0]
+************
+
+Changed
+-------
+
+* Removed Python 3.6 (unsupported)
+* Added Python 3.9 and 3.10
+* Updated the pydantic requirement to include versions up to 1.9.
+
 
 [1.3.6]
 ************
