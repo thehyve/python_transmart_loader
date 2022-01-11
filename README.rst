@@ -136,7 +136,7 @@ For a quick reference on software development, we refer to `the software guide c
 Python versions
 ---------------
 
-This packages is tested with Python versions 3.6 and 3.7.
+This packages is tested with Python versions >= 3.7.
 
 Package management and dependencies
 -----------------------------------

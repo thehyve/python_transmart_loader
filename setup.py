@@ -4,9 +4,9 @@ import os
 import sys
 from setuptools import setup
 
-if sys.version_info < (3, 6):
+if sys.version_info < (3, 7):
     sys.exit(
-        'Python < 3.6 is not supported. You are using Python {}.{}.'.format(
+        'Python < 3.7 is not supported. You are using Python {}.{}.'.format(
             sys.version_info[0], sys.version_info[1])
     )
 
@@ -47,18 +47,17 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     test_suite='tests',
-    python_requires='>=3.6.0',
+    python_requires='>=3.7.0',
     install_requires=required_packages,
     setup_requires=[
         # dependency for `python setup.py test`
         'pytest-runner',
-        # dependencies for `python setup.py build_sphinx`
-        'sphinx',
-        'sphinx_rtd_theme',
-        'recommonmark',
         # dependency for `python setup.py bdist_wheel`
         'wheel'
     ],
