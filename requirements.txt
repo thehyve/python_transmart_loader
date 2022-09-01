@@ -1,1 +1,2 @@
+importlib-metadata >= 4.11, < 4.12
 pydantic >= 1.10, < 1.11
