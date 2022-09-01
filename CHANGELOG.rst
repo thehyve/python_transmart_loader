@@ -8,6 +8,16 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 [Unreleased]
 ************
 
+[1.4.1]
+************
+
+Changed
+-------
+
+* Specified allowed version of importlib-metadata
+* Updated the pydantic to version >= 1.10 and below 1.11.
+
+
 [1.4.0]
 ************
 
